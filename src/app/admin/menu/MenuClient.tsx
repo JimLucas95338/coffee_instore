@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import AddOnsSection from './AddOnsSection';
 
 const CATEGORIES = ['ESPRESSO', 'DRIP', 'COLD', 'TEA', 'FOOD', 'RETAIL'] as const;
 type Category = (typeof CATEGORIES)[number];
@@ -211,6 +212,8 @@ export default function MenuClient() {
           {error}
         </div>
       )}
+
+      <AddOnsSection />
 
       {loading ? (
         <div className="text-neutral-400">Loading…</div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import EmptyDisplay from './EmptyDisplay';
 
 interface QueueOrder {
   id: string;
@@ -258,14 +259,16 @@ export default function QueueBoard({ embedded = false }: QueueBoardProps) {
             </div>
           </section>
         </div>
+      ) : embedded ? (
+        <div className="flex-1 min-h-0">
+          <EmptyDisplay />
+        </div>
       ) : (
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
             <p className={`${emptyIcon} mb-4`}>&#9749;</p>
             <p className={`${emptyText} text-neutral-500 font-light`}>No orders right now</p>
-            {!embedded && (
-              <p className="text-lg text-neutral-600 mt-2">New orders will appear here automatically</p>
-            )}
+            <p className="text-lg text-neutral-600 mt-2">New orders will appear here automatically</p>
           </div>
         </div>
       )}

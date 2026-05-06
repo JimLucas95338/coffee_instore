@@ -24,6 +24,9 @@ export default async function AdminLayout({
           <div className="flex items-center gap-6">
             <span className="font-bold text-lg">Eco Delight Admin</span>
             <nav className="flex gap-4 text-sm">
+              <Link href="/admin/menu" className="text-neutral-300 hover:text-white">
+                Menu
+              </Link>
               <Link href="/admin/users" className="text-neutral-300 hover:text-white">
                 Users
               </Link>

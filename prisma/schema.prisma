@@ -1,0 +1,1266 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                  String           @id @default(cuid())
+  email               String           @unique
+  name                String?
+  passwordHash        String?
+  role                UserRole         @default(SALES_REP)
+  phone               String?
+  avatar              String?
+  isActive            Boolean          @default(true)
+  emailVerified       DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  approvedAt          DateTime?
+  approvedById        String?
+  onboardingCompleted Boolean          @default(false)
+  requestedRole       UserRole?
+  accounts            Account[]
+  activities          Activity[]
+  commissions         Commission[]
+  customers           Customer[]
+  demoKits            DemoKit[]
+  leads               Lead[]
+  notifications       Notification[]
+  employeeOrders      Order[]          @relation("EmployeeOrders")
+  orders              Order[]
+  recurringOrders     RecurringOrder[]
+  sessions            Session[]
+  approvedBy          User?            @relation("UserApprovals", fields: [approvedById], references: [id])
+  approvedUsers       User[]           @relation("UserApprovals")
+  inStoreOrders       InStoreOrder[]   @relation("InStoreEmployeeOrders")
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Customer {
+  id                   String           @id @default(cuid())
+  companyName          String
+  contactName          String
+  email                String           @unique
+  phone                String?
+  address              String?
+  city                 String?
+  state                String?
+  zipCode              String?
+  isVerified           Boolean          @default(false)
+  selfServiceToken     String?          @unique
+  notes                String?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  salesRepId           String?
+  baselineCalculatedAt DateTime?
+  baselineMonthlySpend Float?
+  firstPaidOrderAt     DateTime?
+  addressLat           Float?
+  addressLng           Float?
+  googlePlaceId        String?
+  stripeCustomerId     String?          @unique
+  verifiedAddress      Boolean          @default(false)
+  salesRep             User?            @relation(fields: [salesRepId], references: [id])
+  demoKitUsages        DemoKitUsage[]
+  leads                Lead[]
+  orders               Order[]
+  plaidAccounts        PlaidAccount[]
+  recurringOrders      RecurringOrder[]
+  stripeAccounts       StripeAccount[]
+
+  @@map("customers")
+}
+
+model Lead {
+  id           String    @id @default(cuid())
+  companyName  String
+  contactName  String
+  email        String
+  phone        String?
+  source       String    @default("DIRECT")
+  status       String    @default("NEW")
+  notes        String?
+  followUpDate DateTime?
+  convertedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  assignedToId String?
+  customerId   String?
+  assignedTo   User?     @relation(fields: [assignedToId], references: [id])
+  customer     Customer? @relation(fields: [customerId], references: [id])
+
+  @@map("leads")
+}
+
+model Coffee {
+  id             String          @id @default(cuid())
+  name           String
+  description    String?
+  origin         String?
+  roastLevel     String          @default("MEDIUM")
+  flavorNotes    String          @default("[]")
+  isActive       Boolean         @default(true)
+  showOnStore    Boolean         @default(true)
+  isBlend        Boolean         @default(false)
+  allowWholeBean Boolean         @default(true)
+  allowGround    Boolean         @default(true)
+  pricePerPound  Float
+  imageUrl       String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  beanInventory  BeanInventory[]
+  blendComponents BlendComponent[] @relation("BlendComponents")
+  componentOf     BlendComponent[] @relation("ComponentOf")
+  demoKitCoffees DemoKitCoffee[]
+  inventory      Inventory[]
+  packages       Package[]
+  roastBatches   RoastBatch[]
+  menuItems      MenuItem[]
+
+  @@map("coffees")
+}
+
+model BlendComponent {
+  id                String  @id @default(cuid())
+  blendCoffeeId     String
+  componentCoffeeId String
+  proportionPercent Float   // e.g. 0.6 for 60%
+  blendCoffee       Coffee  @relation("BlendComponents", fields: [blendCoffeeId], references: [id], onDelete: Cascade)
+  componentCoffee   Coffee  @relation("ComponentOf", fields: [componentCoffeeId], references: [id])
+
+  @@unique([blendCoffeeId, componentCoffeeId])
+  @@map("blend_components")
+}
+
+model Package {
+  id                  String               @id @default(cuid())
+  name                String
+  type                String
+  sizeOz              Float
+  sizeDescription     String
+  price               Float
+  grindType           String?
+  unitsPerBox         Int?
+  isActive            Boolean              @default(true)
+  isStandard          Boolean              @default(false)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  coffeeId            String
+  inventory           Inventory[]
+  orderItems          OrderItem[]
+  coffee              Coffee               @relation(fields: [coffeeId], references: [id])
+  recurringOrderItems      RecurringOrderItem[]
+  storeOrderItems          StoreOrderItem[]
+  storeRecurringOrderItems StoreRecurringOrderItem[]
+  inStoreOrderItems        InStoreOrderItem[]
+
+  @@map("packages")
+}
+
+model DemoKit {
+  id            String          @id @default(cuid())
+  name          String
+  description   String?
+  totalBags     Int             @default(24)
+  bagsPerCoffee Int             @default(3)
+  bagSizeOz     Float           @default(4.5)
+  cost          Float
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  assignedToId  String?
+  coffees       DemoKitCoffee[]
+  usages        DemoKitUsage[]
+  assignedTo    User?           @relation(fields: [assignedToId], references: [id])
+
+  @@map("demo_kits")
+}
+
+model DemoKitCoffee {
+  id        String  @id @default(cuid())
+  quantity  Int     @default(3)
+  demoKitId String
+  coffeeId  String
+  coffee    Coffee  @relation(fields: [coffeeId], references: [id])
+  demoKit   DemoKit @relation(fields: [demoKitId], references: [id], onDelete: Cascade)
+
+  @@unique([demoKitId, coffeeId])
+  @@map("demo_kit_coffees")
+}
+
+model DemoKitUsage {
+  id              String    @id @default(cuid())
+  usedAt          DateTime  @default(now())
+  notes           String?
+  followUpDate    DateTime?
+  selfServiceSent Boolean   @default(false)
+  demoKitId       String
+  customerId      String
+  customer        Customer  @relation(fields: [customerId], references: [id])
+  demoKit         DemoKit   @relation(fields: [demoKitId], references: [id])
+
+  @@map("demo_kit_usages")
+}
+
+model Order {
+  id                    String                @id @default(cuid())
+  orderNumber           String                @unique
+  status                String                @default("PENDING")
+  deliveryMethod        String
+  subtotal              Float
+  tax                   Float                 @default(0)
+  deliveryFee           Float                 @default(0)
+  total                 Float
+  notes                 String?
+  shippingAddress       String?
+  isSelfService         Boolean               @default(false)
+  followUpScheduled     DateTime?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  roastedAt             DateTime?
+  packagedAt            DateTime?
+  shippedAt             DateTime?
+  deliveredAt           DateTime?
+  customerId            String
+  salesRepId            String?
+  cardLast4             String?
+  paidAt                DateTime?
+  paymentStatus         PaymentStatus         @default(PENDING)
+  shippingLabelUrl      String?
+  trackingNumber        String?
+  achAccountLast4       String?
+  achAccountType        String?
+  achBankName           String?
+  achRoutingLast4       String?
+  checkBankName         String?
+  checkConfirmation     String?
+  checkNumber           String?
+  checkReceivedAt       DateTime?
+  isRecurringChild      Boolean               @default(false)
+  paymentMethodType     PaymentMethod?
+  recurringOrderId      String?
+  needsGrinding         Boolean               @default(false)
+  needsRoasting         Boolean               @default(false)
+  employeeId            String?
+  isEmployeeOrder       Boolean               @default(false)
+  awaitingBeansFlag     Boolean               @default(false)
+  estimatedShipDate     DateTime?
+  fulfillmentAnalyzedAt DateTime?
+  fulfillmentBlockers   String?
+  fulfillmentPath       FulfillmentPath       @default(PENDING_ANALYSIS)
+  plaidAccountId        String?
+  plaidTransferId       String?
+  addressLat            Float?
+  addressLng            Float?
+  googlePlaceId         String?
+  shippingCost          Float?
+  shippingMargin        Float?
+  shippingZone          String?
+  stripeAccountId       String?
+  stripePaymentIntentId String?
+  upsLabelUrl           String?
+  upsShipmentId         String?
+  upsTrackingNumber     String?
+  verifiedAddress       Boolean               @default(false)
+  paymentToken          String?               @unique
+  discountAmount        Float                 @default(0)
+  discountCodeId        String?
+  // Affiliate tracking fields
+  affiliateRef          String?               // referral code from cookie at checkout
+  commission            Commission?
+  items                 OrderItem[]
+  customer              Customer              @relation(fields: [customerId], references: [id])
+  discountCode          DiscountCode?         @relation(fields: [discountCodeId], references: [id])
+  employee              User?                 @relation("EmployeeOrders", fields: [employeeId], references: [id])
+  recurringOrder        RecurringOrder?       @relation(fields: [recurringOrderId], references: [id])
+  salesRep              User?                 @relation(fields: [salesRepId], references: [id])
+  packagingBatches      PackagingBatchOrder[]
+  roastBatches          RoastBatchOrder[]
+  shipments             Shipment[]
+  affiliateConversion   AffiliateConversion?  // Affiliate attribution
+
+  @@index([customerId])
+  @@index([salesRepId])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@index([recurringOrderId])
+  @@index([employeeId])
+  @@index([fulfillmentPath])
+  @@index([awaitingBeansFlag])
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String  @id @default(cuid())
+  quantity   Int
+  unitPrice  Float
+  totalPrice Float
+  grindType  String?
+  orderId    String
+  packageId  String
+  order          Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  package        Package        @relation(fields: [packageId], references: [id])
+  shipmentItems  ShipmentItem[]
+
+  @@map("order_items")
+}
+
+model Inventory {
+  id            String                 @id @default(cuid())
+  quantity      Int                    @default(0)
+  reorderPoint  Int                    @default(10)
+  lastRestocked DateTime?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  coffeeId      String?
+  packageId     String?
+  coffee        Coffee?                @relation(fields: [coffeeId], references: [id])
+  package       Package?               @relation(fields: [packageId], references: [id])
+  transactions  InventoryTransaction[]
+
+  @@unique([coffeeId, packageId])
+  @@map("inventory")
+}
+
+model InventoryTransaction {
+  id          String    @id @default(cuid())
+  type        String
+  quantity    Int
+  notes       String?
+  createdAt   DateTime  @default(now())
+  inventoryId String
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
+
+  @@map("inventory_transactions")
+}
+
+model BeanInventory {
+  id              String            @id @default(cuid())
+  coffeeId        String
+  state           BeanState
+  roastLevel      String?
+  quantityLbs     Float             @default(0)
+  reorderPointLbs Float             @default(5)
+  lastUpdated     DateTime          @updatedAt
+  createdAt       DateTime          @default(now())
+  coffee          Coffee            @relation(fields: [coffeeId], references: [id])
+  transactions    BeanTransaction[]
+
+  @@unique([coffeeId, state, roastLevel])
+  @@index([state])
+  @@map("bean_inventory")
+}
+
+model BeanTransaction {
+  id           String        @id @default(cuid())
+  inventoryId  String
+  type         String
+  quantityLbs  Float
+  notes        String?
+  roastBatchId String?
+  orderId      String?
+  createdAt    DateTime      @default(now())
+  inventory    BeanInventory @relation(fields: [inventoryId], references: [id])
+  roastBatch   RoastBatch?   @relation(fields: [roastBatchId], references: [id])
+
+  @@index([inventoryId])
+  @@index([roastBatchId])
+  @@map("bean_transactions")
+}
+
+model RoastBatch {
+  id                String            @id @default(cuid())
+  batchNumber       String            @unique
+  coffeeId          String
+  status            RoastBatchStatus  @default(PLANNED)
+  greenWeightLbs    Float
+  roastedWeightLbs  Float?
+  weightLossPercent Float?
+  plannedAt         DateTime          @default(now())
+  startedAt         DateTime?
+  completedAt       DateTime?
+  roastLevel        String            @default("MEDIUM")
+  notes             String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  transactions      BeanTransaction[]
+  orders            RoastBatchOrder[]
+  coffee            Coffee            @relation(fields: [coffeeId], references: [id])
+
+  @@index([status])
+  @@index([coffeeId])
+  @@map("roast_batches")
+}
+
+model RoastBatchOrder {
+  id           String     @id @default(cuid())
+  roastBatchId String
+  orderId      String
+  allocatedLbs Float
+  createdAt    DateTime   @default(now())
+  order        Order      @relation(fields: [orderId], references: [id])
+  roastBatch   RoastBatch @relation(fields: [roastBatchId], references: [id], onDelete: Cascade)
+
+  @@unique([roastBatchId, orderId])
+  @@index([orderId])
+  @@map("roast_batch_orders")
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  type        String
+  description String
+  metadata    String?
+  createdAt   DateTime @default(now())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+
+  @@map("activities")
+}
+
+model Commission {
+  id              String           @id @default(cuid())
+  amount          Float
+  rate            Float            @default(0.10)
+  status          CommissionStatus @default(PENDING)
+  paidAt          DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  orderId         String           @unique
+  salesRepId      String
+  baselineAmount  Float?
+  commissionType  String           @default("STANDARD")
+  growthAmount    Float?
+  monthsFromFirst Int?
+  orderMonthSpend Float?
+  order           Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  salesRep        User             @relation(fields: [salesRepId], references: [id])
+
+  @@index([salesRepId])
+  @@index([createdAt])
+  @@map("commissions")
+}
+
+model RecurringOrder {
+  id                String               @id @default(cuid())
+  frequency         RecurringFrequency
+  dayOfWeek         Int?
+  dayOfMonth        Int?
+  weekOfMonth       Int?
+  status            RecurringOrderStatus @default(ACTIVE)
+  nextOrderDate     DateTime
+  lastGeneratedAt   DateTime?
+  deliveryMethod    String
+  notes             String?
+  shippingAddress   String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  pausedAt          DateTime?
+  cancelledAt       DateTime?
+  customerId        String
+  salesRepId        String?
+  autoChargeEnabled Boolean              @default(false)
+  lastChargeError   String?
+  stripeAccountId   String?
+  generatedOrders   Order[]
+  items             RecurringOrderItem[]
+  customer          Customer             @relation(fields: [customerId], references: [id])
+  salesRep          User?                @relation(fields: [salesRepId], references: [id])
+  stripeAccount     StripeAccount?       @relation(fields: [stripeAccountId], references: [id])
+
+  @@index([status, nextOrderDate])
+  @@index([customerId])
+  @@map("recurring_orders")
+}
+
+model RecurringOrderItem {
+  id               String         @id @default(cuid())
+  quantity         Int
+  grindType        String?
+  recurringOrderId String
+  packageId        String
+  package          Package        @relation(fields: [packageId], references: [id])
+  recurringOrder   RecurringOrder @relation(fields: [recurringOrderId], references: [id], onDelete: Cascade)
+
+  @@map("recurring_order_items")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean          @default(false)
+  metadata  String?
+  createdAt DateTime         @default(now())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model DiscountCode {
+  id             String       @id @default(cuid())
+  code           String       @unique
+  type           DiscountType
+  value          Float
+  minOrderAmount Float?
+  maxUses        Int?
+  usedCount      Int          @default(0)
+  expiresAt      DateTime?
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  orders         Order[]
+  storeOrders    StoreOrder[]
+
+  @@map("discount_codes")
+}
+
+model StoreCustomer {
+  id               String          @id @default(cuid())
+  email            String          @unique
+  firstName        String?
+  lastName         String?
+  phone            String?
+  passwordHash     String?
+  isGuest          Boolean         @default(true)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  stripeCustomerId String?         @unique
+  plaidAccounts         PlaidAccount[]
+  addresses             StoreAddress[]
+  orders                StoreOrder[]
+  storeRecurringOrders  StoreRecurringOrder[]
+  stripeAccounts        StripeAccount[]
+
+  @@map("store_customers")
+}
+
+model StoreAddress {
+  id              String        @id @default(cuid())
+  storeCustomerId String
+  firstName       String
+  lastName        String
+  address1        String
+  address2        String?
+  city            String
+  state           String
+  zipCode         String
+  phone           String?
+  isDefault       Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  storeCustomer   StoreCustomer @relation(fields: [storeCustomerId], references: [id], onDelete: Cascade)
+
+  @@map("store_addresses")
+}
+
+model StoreOrder {
+  id                    String           @id @default(cuid())
+  orderNumber           String           @unique
+  status                String           @default("PENDING")
+  subtotal              Float
+  discountAmount        Float            @default(0)
+  tax                   Float
+  shippingFee           Float
+  total                 Float
+  paymentStatus         PaymentStatus    @default(PENDING)
+  paymentMethodType     PaymentMethod?
+  cardLast4             String?
+  paidAt                DateTime?
+  shippingFirstName     String?
+  shippingLastName      String?
+  shippingAddress1      String?
+  shippingAddress2      String?
+  shippingCity          String?
+  shippingState         String?
+  shippingZipCode       String?
+  shippingPhone         String?
+  trackingNumber        String?
+  shippedAt             DateTime?
+  deliveredAt           DateTime?
+  notes                 String?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  storeCustomerId       String
+  discountCodeId        String?
+  plaidAccountId        String?
+  plaidTransferId       String?
+  addressLat            Float?
+  addressLng            Float?
+  googlePlaceId         String?
+  shippingCost          Float?
+  shippingMargin        Float?
+  shippingZone          String?
+  stripeAccountId       String?
+  stripePaymentIntentId String?
+  upsLabelUrl           String?
+  upsShipmentId         String?
+  upsTrackingNumber     String?
+  verifiedAddress       Boolean          @default(false)
+  deliveryMethod        String           @default("SHIPPING")
+  shippingRateId           String?
+  isRecurringChild         Boolean          @default(false)
+  storeRecurringOrderId    String?
+  // Affiliate tracking fields
+  affiliateRef             String?          // referral code from cookie at checkout
+  affiliateCodeUsed        String?          // discount code used (for affiliate attribution)
+  items                    StoreOrderItem[]
+  shipments                Shipment[]
+  discountCode             DiscountCode?    @relation(fields: [discountCodeId], references: [id])
+  storeCustomer            StoreCustomer    @relation(fields: [storeCustomerId], references: [id])
+  storeRecurringOrder      StoreRecurringOrder? @relation(fields: [storeRecurringOrderId], references: [id])
+  affiliateConversion      AffiliateConversion?  // Affiliate attribution
+
+  @@index([storeCustomerId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([storeRecurringOrderId])
+  @@map("store_orders")
+}
+
+model StoreOrderItem {
+  id           String     @id @default(cuid())
+  quantity     Int
+  unitPrice    Float
+  totalPrice   Float
+  grindType    String?
+  frequency    String?    // ONE_TIME, EVERY_2_WEEKS, EVERY_MONTH, EVERY_3_MONTHS
+  storeOrderId String
+  packageId    String
+  package        Package        @relation(fields: [packageId], references: [id])
+  storeOrder     StoreOrder     @relation(fields: [storeOrderId], references: [id], onDelete: Cascade)
+  shipmentItems  ShipmentItem[]
+
+  @@map("store_order_items")
+}
+
+model StoreRecurringOrder {
+  id                String                    @id @default(cuid())
+  frequency         String                    // EVERY_2_WEEKS, EVERY_MONTH, EVERY_3_MONTHS
+  status            String                    @default("ACTIVE") // ACTIVE, PAUSED, CANCELLED
+  nextOrderDate     DateTime
+  lastGeneratedAt   DateTime?
+  deliveryMethod    String                    @default("SHIPPING")
+  shippingFirstName String?
+  shippingLastName  String?
+  shippingAddress1  String?
+  shippingAddress2  String?
+  shippingCity      String?
+  shippingState     String?
+  shippingZipCode   String?
+  shippingPhone     String?
+  pausedAt          DateTime?
+  cancelledAt       DateTime?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  storeCustomerId   String
+  storeCustomer     StoreCustomer             @relation(fields: [storeCustomerId], references: [id])
+  items             StoreRecurringOrderItem[]
+  generatedOrders   StoreOrder[]
+
+  @@index([status, nextOrderDate])
+  @@index([storeCustomerId])
+  @@map("store_recurring_orders")
+}
+
+model StoreRecurringOrderItem {
+  id                    String              @id @default(cuid())
+  quantity              Int
+  unitPrice             Float
+  grindType             String?
+  packageId             String
+  storeRecurringOrderId String
+  package               Package             @relation(fields: [packageId], references: [id])
+  storeRecurringOrder   StoreRecurringOrder @relation(fields: [storeRecurringOrderId], references: [id], onDelete: Cascade)
+
+  @@map("store_recurring_order_items")
+}
+
+model PlaidAccount {
+  id              String         @id @default(cuid())
+  accessToken     String
+  itemId          String
+  accountId       String
+  institutionName String
+  accountName     String
+  accountMask     String
+  accountType     String
+  isDefault       Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  storeCustomerId String?
+  customerId      String?
+  customer        Customer?      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  storeCustomer   StoreCustomer? @relation(fields: [storeCustomerId], references: [id], onDelete: Cascade)
+
+  @@index([storeCustomerId])
+  @@index([customerId])
+  @@map("plaid_accounts")
+}
+
+model StripeAccount {
+  id                    String           @id @default(cuid())
+  stripeCustomerId      String
+  stripePaymentMethodId String
+  financialConnectionId String?
+  institutionName       String
+  accountName           String
+  accountMask           String
+  accountType           String
+  isDefault             Boolean          @default(false)
+  mandateId             String?
+  mandateStatus         String?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  storeCustomerId       String?
+  customerId            String?
+  recurringOrders       RecurringOrder[]
+  customer              Customer?        @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  storeCustomer         StoreCustomer?   @relation(fields: [storeCustomerId], references: [id], onDelete: Cascade)
+
+  @@index([storeCustomerId])
+  @@index([customerId])
+  @@index([stripeCustomerId])
+  @@map("stripe_accounts")
+}
+
+model PackagingBatch {
+  id          String                @id @default(cuid())
+  batchNumber String                @unique
+  status      PackagingStatus       @default(PENDING)
+  notes       String?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  orders      PackagingBatchOrder[]
+
+  @@index([status])
+  @@map("packaging_batches")
+}
+
+model PackagingBatchOrder {
+  id               String         @id @default(cuid())
+  packagingBatchId String
+  orderId          String
+  isCompleted      Boolean        @default(false)
+  completedAt      DateTime?
+  createdAt        DateTime       @default(now())
+  order            Order          @relation(fields: [orderId], references: [id])
+  packagingBatch   PackagingBatch @relation(fields: [packagingBatchId], references: [id], onDelete: Cascade)
+
+  @@unique([packagingBatchId, orderId])
+  @@index([orderId])
+  @@map("packaging_batch_orders")
+}
+
+model Shipment {
+  id                String         @id @default(cuid())
+  shipmentNumber    String         @unique
+  orderType         String                   // "wholesale" | "store"
+  orderId           String?
+  storeOrderId      String?
+  status            String         @default("CREATED")  // CREATED, PACKED, SHIPPED, DELIVERED
+  trackingNumber    String?
+  shippingLabelUrl  String?
+  shippingCost      Float?
+  carrier           String?
+  service           String?
+  deliveryMethod    String?
+  notes             String?
+  createdAt         DateTime       @default(now())
+  packedAt          DateTime?
+  shippedAt         DateTime?
+  deliveredAt       DateTime?
+  items             ShipmentItem[]
+  order             Order?         @relation(fields: [orderId], references: [id])
+  storeOrder        StoreOrder?    @relation(fields: [storeOrderId], references: [id])
+
+  @@index([orderId])
+  @@index([storeOrderId])
+  @@index([status])
+  @@map("shipments")
+}
+
+model ShipmentItem {
+  id               String          @id @default(cuid())
+  shipmentId       String
+  orderItemId      String?
+  storeOrderItemId String?
+  quantity         Int
+  shipment         Shipment        @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  orderItem        OrderItem?      @relation(fields: [orderItemId], references: [id])
+  storeOrderItem   StoreOrderItem? @relation(fields: [storeOrderItemId], references: [id])
+
+  @@map("shipment_items")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  SALES_REP
+  ROASTER
+  PACKAGER
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum CommissionStatus {
+  PENDING
+  PAID
+}
+
+enum NotificationType {
+  ORDER_PAID
+  ORDER_SHIPPED
+  ORDER_DELIVERED
+  COMMISSION_PAID
+  LOW_INVENTORY
+  RECURRING_ORDER_CREATED
+  RECURRING_ORDERS_GENERATED
+  RECURRING_ORDERS_ERROR
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  CHECK
+  ACH
+  ACH_PLAID
+  ACH_STRIPE
+}
+
+enum PackagingStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum RecurringFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY_DAY
+  MONTHLY_WEEKDAY
+}
+
+enum RecurringOrderStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+}
+
+enum BeanState {
+  GREEN
+  ROASTED
+  GROUND
+}
+
+enum RoastBatchStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum FulfillmentPath {
+  PENDING_ANALYSIS
+  READY_TO_FULFILL
+  NEEDS_PACKAGING
+  NEEDS_ROASTING
+  AWAITING_BEANS
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+// ============================================
+// AFFILIATE SYSTEM MODELS
+// ============================================
+
+// Affiliate status for managing affiliate lifecycle
+enum AffiliateStatus {
+  PENDING      // Created but not onboarded to Stripe
+  ACTIVE       // Fully active and can earn commissions
+  PAUSED       // Temporarily disabled
+  TERMINATED   // Permanently disabled
+}
+
+// Conversion status for tracking commission lifecycle
+enum ConversionStatus {
+  PENDING    // Order placed, waiting for fulfillment
+  APPROVED   // Order shipped, commission approved
+  PAID       // Commission paid out
+  CANCELLED  // Order cancelled/refunded
+}
+
+// Payout status for tracking payment processing
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// Main affiliate account model
+model Affiliate {
+  id              String          @id @default(cuid())
+  email           String          @unique
+  name            String
+  password        String          // bcrypt hashed password
+  referralCode    String          @unique // e.g., "JAKE20" - used in ?ref=JAKE20 links
+  commissionRate  Decimal         @default(0.20) @db.Decimal(5, 4) // 20% default
+  status          AffiliateStatus @default(PENDING)
+  
+  // Stripe Connect fields for automated payouts
+  stripeAccountId String?         // acct_xxx from Stripe Connect
+  stripeOnboarded Boolean         @default(false) // true when fully onboarded
+  
+  // Denormalized stats for performance (updated on each conversion)
+  totalClicks     Int             @default(0)
+  totalOrders     Int             @default(0)
+  totalRevenue    Decimal         @default(0) @db.Decimal(10, 2)
+  totalCommission Decimal         @default(0) @db.Decimal(10, 2)
+  pendingBalance  Decimal         @default(0) @db.Decimal(10, 2) // approved but not paid
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relations
+  discountCodes   AffiliateCode[]
+  conversions     AffiliateConversion[]
+  payouts         AffiliatePayout[]
+  clicks          AffiliateClick[]
+
+  @@map("affiliates")
+}
+
+// Affiliate-specific discount codes with custom commission rates
+model AffiliateCode {
+  id              String   @id @default(cuid())
+  code            String   @unique // e.g., "JAKE5" or "JAKE10"
+  affiliateId     String
+  affiliate       Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  
+  discountPercent Decimal  @db.Decimal(5, 4) // 0.05 = 5%, 0.10 = 10%
+  commissionRate  Decimal  @db.Decimal(5, 4) // 0.15 = 15%, 0.10 = 10%
+  
+  usageCount      Int      @default(0)
+  maxUsage        Int?     // null = unlimited
+  expiresAt       DateTime?
+  isActive        Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  
+  // Relations
+  conversions     AffiliateConversion[]
+
+  @@index([affiliateId])
+  @@map("affiliate_codes")
+}
+
+// Track affiliate link clicks for analytics
+model AffiliateClick {
+  id          String    @id @default(cuid())
+  affiliateId String
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  
+  visitorId   String    // anonymous tracking ID from cookie for attribution
+  ipAddress   String?   // for fraud detection
+  userAgent   String?   // browser info
+  referer     String?   // where they came from
+  landingPage String    // which page they landed on
+  
+  createdAt   DateTime  @default(now())
+  
+  @@index([affiliateId, createdAt])
+  @@index([visitorId])
+  @@map("affiliate_clicks")
+}
+
+// Track conversions (orders attributed to affiliates)
+model AffiliateConversion {
+  id               String           @id @default(cuid())
+  affiliateId      String
+  affiliate        Affiliate        @relation(fields: [affiliateId], references: [id])
+  
+  // Can be linked to either Order or StoreOrder
+  orderId          String?          @unique
+  order            Order?           @relation(fields: [orderId], references: [id])
+  storeOrderId     String?          @unique
+  storeOrder       StoreOrder?      @relation(fields: [storeOrderId], references: [id])
+  
+  // Affiliate code used (if any)
+  affiliateCodeId  String?
+  affiliateCode    AffiliateCode?   @relation(fields: [affiliateCodeId], references: [id])
+  
+  // Financial details at time of conversion
+  orderSubtotal    Decimal          @db.Decimal(10, 2) // before discount
+  discountAmount   Decimal          @default(0) @db.Decimal(10, 2)
+  commissionRate   Decimal          @db.Decimal(5, 4) // rate at time of conversion
+  commissionAmount Decimal          @db.Decimal(10, 2) // calculated commission
+  
+  status           ConversionStatus @default(PENDING)
+  
+  // Attribution data
+  clickId          String?          // which click led to this conversion
+  attributedAt     DateTime         @default(now())
+  
+  createdAt        DateTime         @default(now())
+  paidAt           DateTime?
+  payoutId         String?
+  payout           AffiliatePayout? @relation(fields: [payoutId], references: [id])
+  
+  @@index([affiliateId, status])
+  @@index([affiliateId, createdAt])
+  @@map("affiliate_conversions")
+}
+
+// Track payouts to affiliates
+model AffiliatePayout {
+  id               String        @id @default(cuid())
+  affiliateId      String
+  affiliate        Affiliate     @relation(fields: [affiliateId], references: [id])
+  
+  amount           Decimal       @db.Decimal(10, 2)
+  stripeTransferId String?       // tr_xxx from Stripe
+  status           PayoutStatus  @default(PENDING)
+  
+  conversions      AffiliateConversion[]
+  
+  createdAt        DateTime      @default(now())
+  processedAt      DateTime?
+  failedReason     String?
+  
+  @@index([affiliateId, status])
+  @@index([status, createdAt])
+  @@map("affiliate_payouts")
+}
+
+model AffiliatePromotion {
+  id              String    @id @default(cuid())
+  name            String
+  discountPercent Float
+  isActive        Boolean   @default(true)
+  startsAt        DateTime  @default(now())
+  endsAt          DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("affiliate_promotions")
+}
+
+// ========================
+// Loyalty Program
+// ========================
+
+model LoyaltyMember {
+  id           String               @id @default(cuid())
+  phone        String               @unique
+  name         String?
+  points       Int                  @default(0)
+  totalSpent   Float                @default(0)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  transactions LoyaltyTransaction[]
+
+  @@map("loyalty_members")
+}
+
+model LoyaltyTransaction {
+  id          String        @id @default(cuid())
+  memberId    String
+  member      LoyaltyMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  orderId     String?
+  points      Int           // positive = earned, negative = redeemed
+  type        String        // EARN or REDEEM
+  description String?
+  createdAt   DateTime      @default(now())
+
+  @@index([memberId])
+  @@map("loyalty_transactions")
+}
+
+// ========================
+// In-Store Ordering Models
+// ========================
+
+enum DrinkSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum MilkType {
+  WHOLE
+  TWO_PERCENT
+  OAT
+  ALMOND
+  SOY
+  COCONUT
+  NONE
+}
+
+enum DrinkTemp {
+  HOT
+  ICED
+}
+
+enum InStoreOrderStatus {
+  RECEIVED
+  IN_PROGRESS
+  READY
+  PICKED_UP
+  CANCELLED
+}
+
+enum InStorePaymentMethod {
+  CARD
+  APPLE_PAY
+  CASH
+}
+
+enum InStorePaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+}
+
+model MenuItem {
+  id          String             @id @default(cuid())
+  name        String
+  description String?
+  category    String             // ESPRESSO, DRIP, COLD, TEA, FOOD, RETAIL
+  basePrice   Float              // Price for SMALL / default size
+  mediumPrice Float?             // Price for MEDIUM (null if no sizes)
+  largePrice  Float?             // Price for LARGE (null if no sizes)
+  imageUrl    String?
+  isActive    Boolean            @default(true)
+  sortOrder   Int                @default(0)
+  allowSizes  Boolean            @default(true)
+  allowMilk   Boolean            @default(true)
+  allowTemp   Boolean            @default(true)
+  coffeeId    String?
+  coffee      Coffee?            @relation(fields: [coffeeId], references: [id])
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  addOns      MenuAddOn[]
+  orderItems  InStoreOrderItem[]
+
+  @@index([category])
+  @@map("menu_items")
+}
+
+model MenuAddOn {
+  id        String     @id @default(cuid())
+  name      String
+  price     Float
+  category  String     @default("GENERAL") // SYRUP, TOPPING, EXTRA
+  isActive  Boolean    @default(true)
+  sortOrder Int        @default(0)
+  menuItems MenuItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("menu_add_ons")
+}
+
+model InStoreOrder {
+  id                    String                @id @default(cuid())
+  orderNumber           String                @unique
+  displayNumber         Int
+  status                InStoreOrderStatus    @default(RECEIVED)
+  customerName          String?
+  subtotal              Float
+  tax                   Float                 @default(0)
+  total                 Float
+  paymentMethod         InStorePaymentMethod
+  paymentStatus         InStorePaymentStatus  @default(PENDING)
+  stripePaymentIntentId String?
+  paidAt                DateTime?
+  source                String                @default("KIOSK") // KIOSK or POS
+  employeeId            String?
+  employee              User?                 @relation("InStoreEmployeeOrders", fields: [employeeId], references: [id])
+  loyaltyPhone          String?
+  loyaltyPointsEarned   Int?
+  loyaltyPointsRedeemed Int?
+  loyaltyDiscount       Float?
+  items                 InStoreOrderItem[]
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("in_store_orders")
+}
+
+model InStoreOrderItem {
+  id          String      @id @default(cuid())
+  quantity    Int         @default(1)
+  unitPrice   Float
+  totalPrice  Float
+  size        DrinkSize?
+  milkType    MilkType?
+  temperature DrinkTemp?
+  addOns      String?     // JSON: [{addOnId, name, price}]
+  notes       String?
+  menuItemId  String
+  menuItem    MenuItem    @relation(fields: [menuItemId], references: [id])
+  packageId   String?
+  package     Package?    @relation(fields: [packageId], references: [id])
+  orderId     String
+  order       InStoreOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("in_store_order_items")
+}

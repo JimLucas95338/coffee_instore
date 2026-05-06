@@ -1,9 +1,23 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Space_Grotesk, Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
 
-const inter = Inter({ subsets: ['latin'] });
+const display = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-display',
+  weight: ['500', '600', '700'],
+});
+
+const sans = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+});
+
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+});
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -11,12 +25,13 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#0a0a0a',
+  themeColor: '#0a0e27',
 };
 
 export const metadata: Metadata = {
-  title: 'Eco Delight Coffee — In Store',
-  description: 'Eco Delight Coffee in-store ordering: kiosk, POS, and queue.',
+  title: '3rd Space Coffee — In Store',
+  description:
+    'In-store ordering for 3rd Space Coffee: kiosk, POS, customer display, and queue.',
 };
 
 export default function RootLayout({
@@ -25,8 +40,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${display.variable} ${sans.variable} ${mono.variable}`}
+    >
+      <body className="font-sans">
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions, isAdmin } from '@/lib/auth';
+import { Brand } from '@/components/Brand';
 import LogoutButton from './_components/LogoutButton';
 
 export default async function AdminLayout({
@@ -18,35 +19,39 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white">
-      <header className="border-b border-neutral-800 bg-neutral-900">
+    <div className="min-h-screen bg-space-950 text-cream relative overflow-hidden">
+      <div className="absolute inset-0 starfield opacity-30 pointer-events-none" />
+      <header className="relative border-b border-space-700 bg-space-900/80 backdrop-blur">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <span className="font-bold text-lg">Eco Delight Admin</span>
-            <nav className="flex gap-4 text-sm">
-              <Link href="/admin/menu" className="text-neutral-300 hover:text-white">
+          <div className="flex items-center gap-8">
+            <Link href="/instore/home">
+              <Brand size="sm" />
+            </Link>
+            <span className="font-mono text-xs uppercase tracking-[0.25em] text-saturn-400">
+              Admin
+            </span>
+            <nav className="flex gap-5 text-sm">
+              <Link href="/admin/menu" className="text-cream-dark/80 hover:text-saturn-400 transition-colors">
                 Menu
               </Link>
-              <Link href="/admin/users" className="text-neutral-300 hover:text-white">
+              <Link href="/admin/users" className="text-cream-dark/80 hover:text-saturn-400 transition-colors">
                 Users
               </Link>
-              <Link href="/instore/pos" className="text-neutral-300 hover:text-white">
-                POS
+              <Link href="/instore/home" className="text-cream-dark/80 hover:text-saturn-400 transition-colors">
+                Hub
               </Link>
-              <Link href="/instore/kiosk" className="text-neutral-300 hover:text-white">
-                Kiosk
+              <Link href="/instore/pos" className="text-cream-dark/80 hover:text-saturn-400 transition-colors">
+                POS
               </Link>
             </nav>
           </div>
           <div className="flex items-center gap-3 text-sm">
-            <span className="text-neutral-400">
-              {session.user.email}
-            </span>
+            <span className="text-cream-dark/60">{session.user.email}</span>
             <LogoutButton />
           </div>
         </div>
       </header>
-      <main className="max-w-6xl mx-auto px-6 py-8">{children}</main>
+      <main className="relative max-w-6xl mx-auto px-6 py-8">{children}</main>
     </div>
   );
 }

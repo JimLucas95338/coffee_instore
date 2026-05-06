@@ -3,6 +3,7 @@
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
+import { Brand } from '@/components/Brand';
 
 function LoginForm() {
   const router = useRouter();
@@ -36,32 +37,37 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-950 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-space-950 p-6 relative overflow-hidden">
+      <div className="absolute inset-0 starfield opacity-60 pointer-events-none" />
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm bg-neutral-900 rounded-2xl p-8 border border-neutral-800"
+        className="relative w-full max-w-sm bg-space-900/80 backdrop-blur rounded-2xl p-8 border border-space-700 shadow-[0_0_60px_rgba(255,107,53,0.15)]"
       >
-        <h1 className="text-2xl font-bold text-white mb-1">Eco Delight Coffee</h1>
-        <p className="text-neutral-400 mb-6 text-sm">Manager sign in</p>
+        <div className="flex flex-col items-center mb-6">
+          <Brand size="lg" align="center" withTagline />
+          <p className="mt-4 text-cream-dark/70 text-sm font-mono uppercase tracking-widest">
+            Manager sign in
+          </p>
+        </div>
 
-        <label className="block text-sm text-neutral-300 mb-1">Email</label>
+        <label className="block text-sm text-cream-dark mb-1">Email</label>
         <input
           type="email"
           autoComplete="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 px-3 py-2 rounded-lg bg-neutral-800 border border-neutral-700 text-white outline-none focus:border-amber-500"
+          className="w-full mb-4 px-3 py-2 rounded-lg bg-space-800 border border-space-600 text-cream outline-none focus:border-saturn-500"
         />
 
-        <label className="block text-sm text-neutral-300 mb-1">Password</label>
+        <label className="block text-sm text-cream-dark mb-1">Password</label>
         <input
           type="password"
           autoComplete="current-password"
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-4 px-3 py-2 rounded-lg bg-neutral-800 border border-neutral-700 text-white outline-none focus:border-amber-500"
+          className="w-full mb-4 px-3 py-2 rounded-lg bg-space-800 border border-space-600 text-cream outline-none focus:border-saturn-500"
         />
 
         {error && (
@@ -73,9 +79,9 @@ function LoginForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-2.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold disabled:opacity-50"
+          className="w-full py-2.5 rounded-lg bg-saturn-500 hover:bg-saturn-400 text-space-950 font-bold disabled:opacity-50 transition-colors"
         >
-          {submitting ? 'Signing in…' : 'Sign in'}
+          {submitting ? 'Engaging…' : 'Launch'}
         </button>
       </form>
     </div>
@@ -84,7 +90,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-neutral-950" />}>
+    <Suspense fallback={<div className="min-h-screen bg-space-950" />}>
       <LoginForm />
     </Suspense>
   );

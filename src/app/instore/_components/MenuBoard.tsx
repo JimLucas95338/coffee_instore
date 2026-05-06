@@ -286,15 +286,17 @@ export default function MenuBoard({ embedded = false }: MenuBoardProps) {
     >
       {/* Header / Branding */}
       <header className="flex flex-shrink-0 items-center justify-center gap-3 px-6 pt-6 pb-2">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl" role="img" aria-label="leaf">
-            🌿
+        <div className="flex items-center gap-3">
+          <span className="text-2xl" role="img" aria-label="rocket">
+            🪐
           </span>
           <h1
-            className="font-bold tracking-tight"
-            style={{ fontSize: headerSize, color: '#fef3c7' }}
+            className="font-display font-bold tracking-tight"
+            style={{ fontSize: headerSize }}
           >
-            Eco Delight Coffee
+            <span style={{ color: '#ff7a33' }}>3rd</span>{' '}
+            <span style={{ color: '#f4e5c2' }}>Space</span>{' '}
+            <span style={{ color: '#d8c79b' }}>Coffee</span>
           </h1>
         </div>
       </header>

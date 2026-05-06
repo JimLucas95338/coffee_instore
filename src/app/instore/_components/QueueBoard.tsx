@@ -147,12 +147,15 @@ export default function QueueBoard({ embedded = false }: QueueBoardProps) {
       <header className={`flex items-center justify-between ${padding} py-6`}>
         <div className={embedded ? 'w-24' : 'w-48'} />
         <div className="flex flex-col items-center gap-1">
-          <h1 className={`${headerText} font-bold tracking-tight`}>
-            <span className="text-emerald-400">Eco</span>{' '}
-            <span className="text-amber-400">Delight</span>
+          <h1 className={`${headerText} font-display font-bold tracking-tight`}>
+            <span className="text-saturn-400">3rd</span>{' '}
+            <span className="text-cream">Space</span>{' '}
+            <span className="text-cream-dark">Coffee</span>
           </h1>
           {!embedded && (
-            <p className="text-sm text-neutral-500 tracking-widest uppercase">Coffee Co.</p>
+            <p className="text-sm text-cream-dark/60 tracking-[0.3em] uppercase font-mono">
+              The Third Place — In Orbit
+            </p>
           )}
         </div>
         <div className={`${embedded ? 'w-24' : 'w-48'} text-right`}>

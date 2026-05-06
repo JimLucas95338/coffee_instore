@@ -1,9 +1,5 @@
-import { Inter } from 'next/font/google';
-
-const inter = Inter({ subsets: ['latin'] });
-
 export const metadata = {
-  title: 'Eco Delight Coffee - In Store',
+  title: '3rd Space Coffee — In Store',
 };
 
 export default function InStoreLayout({
@@ -12,7 +8,7 @@ export default function InStoreLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`${inter.className} min-h-screen bg-neutral-950 text-white`}>
+    <div className="min-h-screen bg-space-950 text-cream">
       {children}
     </div>
   );

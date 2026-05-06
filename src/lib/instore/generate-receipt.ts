@@ -59,7 +59,7 @@ export function generateReceiptThermal(data: ReceiptData): Buffer {
   // Header
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text('ECO DELIGHT COFFEE', cx, y, { align: 'center' });
+  doc.text('3RD SPACE COFFEE', cx, y, { align: 'center' });
   y += 4;
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
@@ -202,7 +202,7 @@ export function generateReceiptStandard(data: ReceiptData): Buffer {
   // Header
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text('ECO DELIGHT COFFEE', cx, y, { align: 'center' });
+  doc.text('3RD SPACE COFFEE', cx, y, { align: 'center' });
   y += 6;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');

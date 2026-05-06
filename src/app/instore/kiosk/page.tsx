@@ -338,20 +338,22 @@ export default function KioskPage() {
         <div
           className={`flex min-h-screen flex-col items-center justify-center px-6 transition-all duration-300 ease-out ${transitionClass}`}
         >
-          <h1 className="mb-2 text-5xl font-bold tracking-tight text-amber-400 sm:text-6xl">
-            Eco Delight Coffee
+          <h1 className="mb-2 font-display text-5xl font-bold tracking-tight sm:text-6xl">
+            <span className="text-saturn-400">3rd</span>{' '}
+            <span className="text-cream">Space</span>{' '}
+            <span className="text-cream-dark">Coffee</span>
           </h1>
-          <p className="mb-14 text-lg text-neutral-400">
-            Fresh roasted, sustainably sourced
+          <p className="mb-14 text-lg text-cream-dark/70 font-mono uppercase tracking-[0.3em]">
+            The Third Place — In Orbit
           </p>
           <button
             onClick={() => {
               cart.clearCart();
               goTo('menu');
             }}
-            className="group relative rounded-2xl bg-amber-500 px-16 py-6 text-2xl font-semibold text-neutral-950 shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-400 hover:shadow-amber-500/40 active:scale-95"
+            className="group relative rounded-2xl bg-saturn-500 px-16 py-6 text-2xl font-display font-semibold text-space-950 shadow-lg shadow-saturn-500/30 transition-all hover:bg-saturn-400 hover:shadow-saturn-500/50 active:scale-95"
           >
-            <span className="relative z-10">Start Order</span>
+            <span className="relative z-10">Launch Order</span>
             <span className="absolute inset-0 animate-pulse rounded-2xl bg-amber-400/30 blur-xl" />
           </button>
         </div>

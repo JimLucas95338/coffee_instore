@@ -140,7 +140,7 @@ export function generateCupLabelReceipt(data: CupLabelData): Buffer {
   // Header
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('ECO DELIGHT COFFEE', centerX, y, { align: 'center' });
+  doc.text('3RD SPACE COFFEE', centerX, y, { align: 'center' });
   y += 5;
 
   // Dashed line

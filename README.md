@@ -1,8 +1,8 @@
-# Coffee In-Store
+# 3rd Space Coffee — In-Store
 
-Standalone Next.js app for the Eco Delight Coffee in-store ordering module: kiosk, POS, queue, menu board, and loyalty.
+Standalone Next.js app for 3rd Space Coffee's in-store ordering: kiosk, POS, queue, customer display, loyalty, and admin tools.
 
-Extracted from the main `ecoweb` monorepo to ship as its own Vercel deploy. Shares the same Postgres DB as the main app.
+Originally extracted from a larger monorepo and rebranded. Runs on its own Neon Postgres database and Vercel project.
 
 ## Routes
 

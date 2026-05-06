@@ -148,6 +148,14 @@ export async function POST(request: NextRequest) {
     const orderNumber = generateOrderNumber();
     const displayNumber = await getNextDisplayNumber();
 
+    // TODO(stripe): when Stripe Terminal is wired up, drop the auto-PAID for
+    // CARD/APPLE_PAY and let the payment_intent.succeeded webhook flip status.
+    // For now: card-type payments mark PAID immediately (honor-system),
+    // CASH stays PENDING until staff confirms collection.
+    const initialPaymentStatus =
+      data.paymentMethod === 'CASH' ? 'PENDING' : 'PAID';
+    const initialPaidAt = initialPaymentStatus === 'PAID' ? new Date() : null;
+
     const order = await db.inStoreOrder.create({
       data: {
         orderNumber,
@@ -157,7 +165,8 @@ export async function POST(request: NextRequest) {
         tax,
         total,
         paymentMethod: data.paymentMethod,
-        paymentStatus: data.paymentMethod === 'CASH' ? 'PENDING' : 'PENDING',
+        paymentStatus: initialPaymentStatus,
+        paidAt: initialPaidAt,
         source: data.source,
         employeeId: data.employeeId || null,
         loyaltyPhone: normalizedPhone || null,

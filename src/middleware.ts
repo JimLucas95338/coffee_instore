@@ -3,28 +3,30 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 const MANAGER_ROUTES = ['/instore/pos'];
-const MANAGER_API_PREFIXES = [
-  '/api/instore/analytics',
-];
+const MANAGER_API_PREFIXES = ['/api/instore/analytics'];
+const ADMIN_ROUTES = ['/admin'];
+const ADMIN_API_PREFIXES = ['/api/admin'];
 
-function isManagerRoute(pathname: string): boolean {
-  return MANAGER_ROUTES.some((r) => pathname === r || pathname.startsWith(r + '/'));
-}
-
-function isManagerApi(pathname: string): boolean {
-  return MANAGER_API_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'));
+function matches(pathname: string, list: string[]): boolean {
+  return list.some((p) => pathname === p || pathname.startsWith(p + '/'));
 }
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (!isManagerRoute(pathname) && !isManagerApi(pathname)) {
+  const adminGated = matches(pathname, ADMIN_ROUTES) || matches(pathname, ADMIN_API_PREFIXES);
+  const managerGated =
+    matches(pathname, MANAGER_ROUTES) || matches(pathname, MANAGER_API_PREFIXES);
+
+  if (!adminGated && !managerGated) {
     return NextResponse.next();
   }
 
+  const isApi = pathname.startsWith('/api/');
   const token = await getToken({ req: request });
+
   if (!token) {
-    if (isManagerApi(pathname)) {
+    if (isApi) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const url = new URL('/login', request.url);
@@ -32,8 +34,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (token.role !== 'ADMIN' && token.role !== 'MANAGER') {
-    if (isManagerApi(pathname)) {
+  if (adminGated && token.role !== 'ADMIN') {
+    if (isApi) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    return NextResponse.redirect(new URL('/instore/kiosk', request.url));
+  }
+
+  if (managerGated && token.role !== 'ADMIN' && token.role !== 'MANAGER') {
+    if (isApi) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
     return NextResponse.redirect(new URL('/login', request.url));

@@ -112,10 +112,10 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
 };
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
-  RECEIVED: 'Received',
-  IN_PROGRESS: 'In Progress',
-  READY: 'Ready',
-  PICKED_UP: 'Picked Up',
+  RECEIVED: 'On the Pad',
+  IN_PROGRESS: 'T-minus & Counting',
+  READY: 'Lift-off',
+  PICKED_UP: 'In Orbit',
 };
 
 const NEXT_STATUS: Record<OrderStatus, OrderStatus | null> = {

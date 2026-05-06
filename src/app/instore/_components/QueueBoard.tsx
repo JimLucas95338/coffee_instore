@@ -178,8 +178,8 @@ export default function QueueBoard({ embedded = false }: QueueBoardProps) {
           <section className="flex-1 flex flex-col min-w-0">
             <div className="mb-4 flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-neutral-400" />
-              <h2 className={`${columnHeader} font-bold text-neutral-400 uppercase tracking-wider`}>
-                New
+              <h2 className={`${columnHeader} font-display font-bold text-neutral-400 uppercase tracking-wider`}>
+                On the Pad
               </h2>
               <span className={`ml-auto ${countText} text-neutral-500 font-mono`}>
                 {received.length}
@@ -208,8 +208,8 @@ export default function QueueBoard({ embedded = false }: QueueBoardProps) {
           <section className="flex-1 flex flex-col min-w-0">
             <div className="mb-4 flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-amber-500 animate-pulse" />
-              <h2 className={`${columnHeader} font-bold text-amber-500 uppercase tracking-wider`}>
-                In Progress
+              <h2 className={`${columnHeader} font-display font-bold text-saturn-400 uppercase tracking-wider`}>
+                T-minus & Counting
               </h2>
               <span className={`ml-auto ${countText} text-neutral-500 font-mono`}>
                 {inProgress.length}
@@ -238,8 +238,8 @@ export default function QueueBoard({ embedded = false }: QueueBoardProps) {
           <section className="flex-1 flex flex-col min-w-0">
             <div className="mb-4 flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
-              <h2 className={`${columnHeader} font-bold text-green-500 uppercase tracking-wider`}>
-                Ready
+              <h2 className={`${columnHeader} font-display font-bold text-nebula-cyan uppercase tracking-wider`}>
+                Lift-off
               </h2>
               <span className={`ml-auto ${countText} text-neutral-500 font-mono`}>
                 {ready.length}

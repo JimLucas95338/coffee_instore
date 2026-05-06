@@ -56,6 +56,14 @@ export default async function InStoreHome() {
     },
   ];
 
+  tiles.push({
+    href: '/help',
+    title: 'Staff Guide',
+    description: 'How to run the system, status flow, troubleshooting',
+    emoji: '📖',
+    accent: 'from-nebula-cyan to-space-700',
+  });
+
   if (admin) {
     tiles.push(
       {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getServerSession } from 'next-auth';
 import { authOptions, isAdmin } from '@/lib/auth';
 import { THEMES, getTheme } from '@/themes';
@@ -51,6 +52,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unknown themeId' }, { status: 400 });
     }
     await setActiveTheme(themeId);
+    // Bust any cached layouts so the next request paints the new theme.
+    revalidatePath('/', 'layout');
     return NextResponse.json({ success: true, activeThemeId: next.id });
   } catch (error) {
     console.error('Error updating theme:', error);

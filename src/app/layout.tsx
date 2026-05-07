@@ -4,6 +4,10 @@ import './globals.css';
 import { Providers } from '@/components/providers';
 import { getActiveTheme, renderThemeStyle } from '@/lib/theme';
 
+// Theme is read from the DB on every request — never prerender the layout
+// statically, otherwise switching themes wouldn't take effect until a redeploy.
+export const dynamic = 'force-dynamic';
+
 const display = Space_Grotesk({
   subsets: ['latin'],
   variable: '--font-display',

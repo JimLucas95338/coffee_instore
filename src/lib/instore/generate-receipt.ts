@@ -13,6 +13,13 @@ export interface ReceiptItem {
   totalPrice: number;
 }
 
+export interface ReceiptBrand {
+  /** All-caps single line printed at the top. */
+  header: string;
+  /** Optional address lines printed under the header. */
+  address?: string[];
+}
+
 export interface ReceiptData {
   orderNumber: string;
   displayNumber: number;
@@ -23,6 +30,7 @@ export interface ReceiptData {
   total: number;
   paymentMethod: string;
   paymentStatus: string;
+  brand?: ReceiptBrand;
   source: string;
   createdAt: Date;
   loyaltyPoints?: number;
@@ -57,16 +65,19 @@ export function generateReceiptThermal(data: ReceiptData): Buffer {
   let y = 5;
 
   // Header
+  const header = data.brand?.header ?? '3RD SPACE COFFEE';
+  const address = data.brand?.address ?? ['9731 Dino Dr, Suite 130', 'Elk Grove, CA 95624'];
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text('3RD SPACE COFFEE', cx, y, { align: 'center' });
+  doc.text(header, cx, y, { align: 'center' });
   y += 4;
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
-  doc.text('9731 Dino Dr, Suite 130', cx, y, { align: 'center' });
-  y += 3;
-  doc.text('Elk Grove, CA 95624', cx, y, { align: 'center' });
-  y += 5;
+  for (const line of address) {
+    doc.text(line, cx, y, { align: 'center' });
+    y += 3;
+  }
+  y += 2;
 
   // Divider
   doc.setFontSize(6);
@@ -200,13 +211,15 @@ export function generateReceiptStandard(data: ReceiptData): Buffer {
   let y = 20;
 
   // Header
+  const header = data.brand?.header ?? '3RD SPACE COFFEE';
+  const addressLine = (data.brand?.address ?? ['9731 Dino Dr, Suite 130, Elk Grove, CA 95624']).join(', ');
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text('3RD SPACE COFFEE', cx, y, { align: 'center' });
+  doc.text(header, cx, y, { align: 'center' });
   y += 6;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text('9731 Dino Dr, Suite 130, Elk Grove, CA 95624', cx, y, { align: 'center' });
+  doc.text(addressLine, cx, y, { align: 'center' });
   y += 10;
 
   // Order info

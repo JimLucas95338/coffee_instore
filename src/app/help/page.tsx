@@ -17,34 +17,34 @@ export default async function HelpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-space-950 text-cream relative overflow-hidden">
+    <div className="min-h-screen bg-surface-950 text-ink relative overflow-hidden">
       <div className="absolute inset-0 starfield opacity-30 pointer-events-none" />
 
-      <header className="relative border-b border-space-700 bg-space-900/80 backdrop-blur">
+      <header className="relative border-b border-surface-700 bg-surface-900/80 backdrop-blur">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/instore/home">
             <Brand size="sm" />
           </Link>
-          <span className="font-mono text-xs uppercase tracking-[0.25em] text-saturn-400">
+          <span className="font-mono text-xs uppercase tracking-[0.25em] text-accent-400">
             Staff Guide
           </span>
         </div>
       </header>
 
-      <main className="relative max-w-4xl mx-auto px-6 py-10 prose-cream">
-        <p className="text-sm text-cream-dark/60 italic mb-8">
+      <main className="relative max-w-4xl mx-auto px-6 py-10 prose-ink">
+        <p className="text-sm text-ink-dark/60 italic mb-8">
           The Third Place — In Orbit. Everything a barista, manager, or admin needs to run the in-store system.
         </p>
 
         <Toc />
 
         <Section id="quickstart" number="1" title="Quick start">
-          <ol className="list-decimal pl-6 space-y-1 text-cream-dark">
+          <ol className="list-decimal pl-6 space-y-1 text-ink-dark">
             <li>Open https://coffeeinstore.vercel.app on the iPad or laptop.</li>
             <li>Sign in — you&apos;ll land on Mission Control.</li>
             <li>From there, pick a station: POS, Queue, Customer Display, Kiosk, Menu Admin, Users.</li>
           </ol>
-          <p className="mt-3 text-cream-dark">
+          <p className="mt-3 text-ink-dark">
             Default seeded accounts (change after first login):
           </p>
           <Table
@@ -92,7 +92,7 @@ export default async function HelpPage() {
         </Section>
 
         <Section id="lifecycle" number="3" title="The order lifecycle">
-          <p className="text-cream-dark mb-4">
+          <p className="text-ink-dark mb-4">
             Every order moves through four space-themed states. The DB enums are unchanged — just the labels.
           </p>
           <Table
@@ -107,8 +107,8 @@ export default async function HelpPage() {
         </Section>
 
         <Section id="ops" number="4" title="Daily operations">
-          <h3 className="font-display text-lg font-semibold text-saturn-400 mt-4 mb-2">Opening</h3>
-          <ol className="list-decimal pl-6 space-y-1 text-cream-dark">
+          <h3 className="font-display text-lg font-semibold text-accent-400 mt-4 mb-2">Opening</h3>
+          <ol className="list-decimal pl-6 space-y-1 text-ink-dark">
             <li>Power on the iPad/laptop and the customer monitor.</li>
             <li>Open coffeeinstore.vercel.app on each device.</li>
             <li>Customer iPad → <Code>/instore/kiosk</Code></li>
@@ -118,8 +118,8 @@ export default async function HelpPage() {
             <li>Verify the printer is connected.</li>
           </ol>
 
-          <h3 className="font-display text-lg font-semibold text-saturn-400 mt-6 mb-2">Closing</h3>
-          <ol className="list-decimal pl-6 space-y-1 text-cream-dark">
+          <h3 className="font-display text-lg font-semibold text-accent-400 mt-6 mb-2">Closing</h3>
+          <ol className="list-decimal pl-6 space-y-1 text-ink-dark">
             <li>Note the totals from the POS Daily Sales Summary.</li>
             <li>Reconcile cash drawer against the cash subtotal.</li>
             <li>Investigate or cancel any orders still on On the Pad / T-minus.</li>
@@ -128,16 +128,16 @@ export default async function HelpPage() {
         </Section>
 
         <Section id="menu" number="5" title="Menu management (admin)">
-          <p className="text-cream-dark mb-3">
-            <Link href="/admin/menu" className="text-saturn-400 hover:underline">
+          <p className="text-ink-dark mb-3">
+            <Link href="/admin/menu" className="text-accent-400 hover:underline">
               /admin/menu
             </Link>{' '}
             — add, edit, hide, delete menu items, and toggle add-on availability.
           </p>
-          <h3 className="font-display text-lg font-semibold text-saturn-400 mt-4 mb-2">
+          <h3 className="font-display text-lg font-semibold text-accent-400 mt-4 mb-2">
             Hide vs. delete
           </h3>
-          <ul className="list-disc pl-6 space-y-2 text-cream-dark">
+          <ul className="list-disc pl-6 space-y-2 text-ink-dark">
             <li>
               <strong>Hide</strong>: removes from kiosk/POS but keeps history. Use when 86&apos;d on
               an item — toggle back when restocked.
@@ -147,10 +147,10 @@ export default async function HelpPage() {
               hide instead.
             </li>
           </ul>
-          <h3 className="font-display text-lg font-semibold text-saturn-400 mt-6 mb-2">
+          <h3 className="font-display text-lg font-semibold text-accent-400 mt-6 mb-2">
             Add-on availability
           </h3>
-          <p className="text-cream-dark">
+          <p className="text-ink-dark">
             On <Code>/admin/menu</Code>, the Add-ons section shows every modifier as a tile.
             Click to flip Available ↔ Hidden. Hidden add-ons disappear from the customize step
             on kiosk and POS immediately.
@@ -158,10 +158,10 @@ export default async function HelpPage() {
         </Section>
 
         <Section id="receipts" number="6" title="Receipts and cup labels">
-          <p className="text-cream-dark">
+          <p className="text-ink-dark">
             Both are PDFs. In POS, configure print settings:
           </p>
-          <ul className="list-disc pl-6 space-y-1 text-cream-dark mt-2">
+          <ul className="list-disc pl-6 space-y-1 text-ink-dark mt-2">
             <li>
               <strong>Printer type:</strong> Thermal (62×29mm), Receipt (80mm), or None
             </li>
@@ -170,14 +170,14 @@ export default async function HelpPage() {
               is created
             </li>
           </ul>
-          <p className="text-cream-dark mt-3">
+          <p className="text-ink-dark mt-3">
             Connect the printer over Bluetooth or USB at the OS level — there&apos;s no driver
             step in the app.
           </p>
         </Section>
 
         <Section id="loyalty" number="7" title="Loyalty program">
-          <ul className="list-disc pl-6 space-y-1 text-cream-dark">
+          <ul className="list-disc pl-6 space-y-1 text-ink-dark">
             <li>Customer enters phone at kiosk, or gives it at POS.</li>
             <li>
               Earn: <strong>1 point per $1</strong> spent (on the discounted subtotal).
@@ -190,8 +190,8 @@ export default async function HelpPage() {
         </Section>
 
         <Section id="users" number="8" title="Users and roles (admin)">
-          <p className="text-cream-dark mb-3">
-            <Link href="/admin/users" className="text-saturn-400 hover:underline">
+          <p className="text-ink-dark mb-3">
+            <Link href="/admin/users" className="text-accent-400 hover:underline">
               /admin/users
             </Link>{' '}
             — create users, change roles, reset passwords, activate/deactivate.
@@ -221,7 +221,7 @@ export default async function HelpPage() {
               ['Card / Apple Pay', 'Auto-marked PAID on the honor system.'],
             ]}
           />
-          <p className="text-cream-dark mt-3">
+          <p className="text-ink-dark mt-3">
             Real Stripe Terminal integration is on the roadmap — see <Code>TODO.md</Code>.
           </p>
         </Section>
@@ -263,7 +263,7 @@ export default async function HelpPage() {
           />
         </Section>
 
-        <p className="text-xs text-cream-dark/40 mt-12 text-center font-mono">
+        <p className="text-xs text-ink-dark/40 mt-12 text-center font-mono">
           Last updated when this build deployed. For issues, contact your admin.
         </p>
       </main>
@@ -290,14 +290,14 @@ function Toc() {
     ['urls', '11. URL cheat-sheet'],
   ];
   return (
-    <nav className="mb-10 rounded-2xl border border-space-700 bg-space-900/60 p-4">
-      <div className="font-mono text-xs uppercase tracking-[0.25em] text-saturn-400 mb-3">
+    <nav className="mb-10 rounded-2xl border border-surface-700 bg-surface-900/60 p-4">
+      <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent-400 mb-3">
         Contents
       </div>
       <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-sm">
         {items.map(([id, label]) => (
           <li key={id}>
-            <a href={`#${id}`} className="text-cream-dark hover:text-saturn-400 transition-colors">
+            <a href={`#${id}`} className="text-ink-dark hover:text-accent-400 transition-colors">
               {label}
             </a>
           </li>
@@ -321,8 +321,8 @@ function Section({
   return (
     <section id={id} className="mb-10 scroll-mt-24">
       <div className="flex items-baseline gap-3 mb-4">
-        <span className="font-mono text-saturn-400 text-sm">§{number}</span>
-        <h2 className="font-display text-2xl font-bold text-cream">{title}</h2>
+        <span className="font-mono text-accent-400 text-sm">§{number}</span>
+        <h2 className="font-display text-2xl font-bold text-ink">{title}</h2>
       </div>
       {children}
     </section>
@@ -331,7 +331,7 @@ function Section({
 
 function Code({ children }: { children: React.ReactNode }) {
   return (
-    <code className="rounded bg-space-800 border border-space-700 px-1.5 py-0.5 text-xs font-mono text-saturn-300">
+    <code className="rounded bg-surface-800 border border-surface-700 px-1.5 py-0.5 text-xs font-mono text-accent-300">
       {children}
     </code>
   );
@@ -339,9 +339,9 @@ function Code({ children }: { children: React.ReactNode }) {
 
 function Table({ headers, rows }: { headers: string[]; rows: string[][] }) {
   return (
-    <div className="my-3 overflow-hidden rounded-xl border border-space-700 bg-space-900/40">
+    <div className="my-3 overflow-hidden rounded-xl border border-surface-700 bg-surface-900/40">
       <table className="w-full text-sm">
-        <thead className="bg-space-800/60 text-cream-dark">
+        <thead className="bg-surface-800/60 text-ink-dark">
           <tr>
             {headers.map((h) => (
               <th key={h} className="text-left px-4 py-2 font-mono text-xs uppercase tracking-wider">
@@ -352,9 +352,9 @@ function Table({ headers, rows }: { headers: string[]; rows: string[][] }) {
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={i} className="border-t border-space-700">
+            <tr key={i} className="border-t border-surface-700">
               {row.map((cell, j) => (
-                <td key={j} className="px-4 py-2 text-cream-dark/90">
+                <td key={j} className="px-4 py-2 text-ink-dark/90">
                   {cell}
                 </td>
               ))}
@@ -377,8 +377,8 @@ function Callout({
     <div
       className={
         warning
-          ? 'my-3 rounded-lg border border-saturn-700/60 bg-saturn-900/20 px-4 py-3 text-sm text-cream'
-          : 'my-3 rounded-lg border border-space-700 bg-space-900/60 px-4 py-3 text-sm text-cream-dark'
+          ? 'my-3 rounded-lg border border-accent-700/60 bg-accent-900/20 px-4 py-3 text-sm text-ink'
+          : 'my-3 rounded-lg border border-surface-700 bg-surface-900/60 px-4 py-3 text-sm text-ink-dark'
       }
     >
       {children}
@@ -398,17 +398,17 @@ function Definition({
   access?: string;
 }) {
   return (
-    <div className="mb-4 rounded-xl border border-space-700 bg-space-900/40 p-4">
+    <div className="mb-4 rounded-xl border border-surface-700 bg-surface-900/40 p-4">
       <div className="flex items-baseline gap-3 flex-wrap">
-        <span className="font-display text-lg font-semibold text-cream">{term}</span>
+        <span className="font-display text-lg font-semibold text-ink">{term}</span>
         <Code>{url}</Code>
         {access && (
-          <span className="font-mono text-xs uppercase tracking-wider text-cream-dark/60">
+          <span className="font-mono text-xs uppercase tracking-wider text-ink-dark/60">
             {access}
           </span>
         )}
       </div>
-      <p className="mt-1 text-sm text-cream-dark/80">{description}</p>
+      <p className="mt-1 text-sm text-ink-dark/80">{description}</p>
     </div>
   );
 }
@@ -421,9 +421,9 @@ function Trouble({
   children: React.ReactNode;
 }) {
   return (
-    <details className="mb-2 rounded-xl border border-space-700 bg-space-900/40 px-4 py-2 cursor-pointer">
-      <summary className="font-display font-semibold text-cream py-1">{q}</summary>
-      <div className="text-cream-dark text-sm pb-2">{children}</div>
+    <details className="mb-2 rounded-xl border border-surface-700 bg-surface-900/40 px-4 py-2 cursor-pointer">
+      <summary className="font-display font-semibold text-ink py-1">{q}</summary>
+      <div className="text-ink-dark text-sm pb-2">{children}</div>
     </details>
   );
 }

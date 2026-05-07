@@ -1264,3 +1264,13 @@ model InStoreOrderItem {
 
   @@map("in_store_order_items")
 }
+
+// Single-row settings table for app-wide configuration like the active theme.
+// Use id="singleton" so there's only ever one row.
+model AppSetting {
+  id        String   @id @default("singleton")
+  themeId   String   @default("3rd-space")
+  updatedAt DateTime @updatedAt
+
+  @@map("app_settings")
+}

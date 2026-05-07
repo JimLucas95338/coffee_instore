@@ -18,6 +18,8 @@ export interface CupLabelData {
   customerName: string | null;
   items: CupLabelItem[];
   createdAt: Date;
+  /** Receipt-style label header. Falls back to "3RD SPACE COFFEE" if absent. */
+  brandHeader?: string;
 }
 
 const SIZE_MAP: Record<string, string> = {
@@ -140,7 +142,7 @@ export function generateCupLabelReceipt(data: CupLabelData): Buffer {
   // Header
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('3RD SPACE COFFEE', centerX, y, { align: 'center' });
+  doc.text(data.brandHeader ?? '3RD SPACE COFFEE', centerX, y, { align: 'center' });
   y += 5;
 
   // Dashed line

@@ -37,37 +37,37 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-space-950 p-6 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-surface-950 p-6 relative overflow-hidden">
       <div className="absolute inset-0 starfield opacity-60 pointer-events-none" />
       <form
         onSubmit={handleSubmit}
-        className="relative w-full max-w-sm bg-space-900/80 backdrop-blur rounded-2xl p-8 border border-space-700 shadow-[0_0_60px_rgba(255,107,53,0.15)]"
+        className="relative w-full max-w-sm bg-surface-900/80 backdrop-blur rounded-2xl p-8 border border-surface-700 shadow-[0_0_60px_rgba(255,107,53,0.15)]"
       >
         <div className="flex flex-col items-center mb-6">
           <Brand size="lg" align="center" withTagline />
-          <p className="mt-4 text-cream-dark/70 text-sm font-mono uppercase tracking-widest">
+          <p className="mt-4 text-ink-dark/70 text-sm font-mono uppercase tracking-widest">
             Manager sign in
           </p>
         </div>
 
-        <label className="block text-sm text-cream-dark mb-1">Email</label>
+        <label className="block text-sm text-ink-dark mb-1">Email</label>
         <input
           type="email"
           autoComplete="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 px-3 py-2 rounded-lg bg-space-800 border border-space-600 text-cream outline-none focus:border-saturn-500"
+          className="w-full mb-4 px-3 py-2 rounded-lg bg-surface-800 border border-surface-600 text-ink outline-none focus:border-accent-500"
         />
 
-        <label className="block text-sm text-cream-dark mb-1">Password</label>
+        <label className="block text-sm text-ink-dark mb-1">Password</label>
         <input
           type="password"
           autoComplete="current-password"
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-4 px-3 py-2 rounded-lg bg-space-800 border border-space-600 text-cream outline-none focus:border-saturn-500"
+          className="w-full mb-4 px-3 py-2 rounded-lg bg-surface-800 border border-surface-600 text-ink outline-none focus:border-accent-500"
         />
 
         {error && (
@@ -79,7 +79,7 @@ function LoginForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-2.5 rounded-lg bg-saturn-500 hover:bg-saturn-400 text-space-950 font-bold disabled:opacity-50 transition-colors"
+          className="w-full py-2.5 rounded-lg bg-accent-500 hover:bg-accent-400 text-surface-950 font-bold disabled:opacity-50 transition-colors"
         >
           {submitting ? 'Engaging…' : 'Launch'}
         </button>
@@ -90,7 +90,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-space-950" />}>
+    <Suspense fallback={<div className="min-h-screen bg-surface-950" />}>
       <LoginForm />
     </Suspense>
   );

@@ -1,8 +1,8 @@
 'use client';
 
-export default function EmptyDisplay() {
+export default function RocketEmptyDisplay() {
   return (
-    <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-space-950">
+    <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-surface-950">
       {/* Starfield backdrop */}
       <div className="absolute inset-0 starfield opacity-90" />
 

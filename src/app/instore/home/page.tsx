@@ -31,28 +31,28 @@ export default async function InStoreHome() {
       title: 'POS',
       description: 'Take orders at the counter',
       emoji: '🛰️',
-      accent: 'from-saturn-500 to-saturn-700',
+      accent: 'from-accent-500 to-accent-700',
     },
     {
       href: '/instore/queue',
       title: 'Queue',
       description: 'Mark drinks as in progress, ready, picked up',
       emoji: '☄️',
-      accent: 'from-nebula-cyan to-blue-600',
+      accent: 'from-glow-1 to-blue-600',
     },
     {
       href: '/instore/display',
       title: 'Customer Display',
       description: 'Menu board + live order queue',
       emoji: '🪐',
-      accent: 'from-nebula-violet to-nebula-magenta',
+      accent: 'from-glow-3 to-glow-2',
     },
     {
       href: '/instore/kiosk',
       title: 'Kiosk',
       description: 'Customer self-serve ordering',
       emoji: '🚀',
-      accent: 'from-saturn-400 to-nebula-magenta',
+      accent: 'from-accent-400 to-glow-2',
     },
   ];
 
@@ -61,7 +61,7 @@ export default async function InStoreHome() {
     title: 'Staff Guide',
     description: 'How to run the system, status flow, troubleshooting',
     emoji: '📖',
-    accent: 'from-nebula-cyan to-space-700',
+    accent: 'from-glow-1 to-surface-700',
   });
 
   if (admin) {
@@ -71,28 +71,28 @@ export default async function InStoreHome() {
         title: 'Menu Admin',
         description: 'Add, edit, hide menu items and add-ons',
         emoji: '🛸',
-        accent: 'from-saturn-600 to-saturn-800',
+        accent: 'from-accent-600 to-accent-800',
       },
       {
         href: '/admin/users',
         title: 'Users',
         description: 'Manage staff accounts and roles',
         emoji: '👨‍🚀',
-        accent: 'from-nebula-violet to-space-700',
+        accent: 'from-glow-3 to-surface-700',
       }
     );
   }
 
   return (
-    <div className="min-h-screen bg-space-950 text-cream relative overflow-hidden">
+    <div className="min-h-screen bg-surface-950 text-ink relative overflow-hidden">
       <div className="absolute inset-0 starfield opacity-50 pointer-events-none" />
-      <header className="relative border-b border-space-700 bg-space-900/70 backdrop-blur">
+      <header className="relative border-b border-surface-700 bg-surface-900/70 backdrop-blur">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Brand size="md" withTagline spin />
           <div className="flex items-center gap-3 text-sm">
             <div className="text-right">
-              <div className="text-cream">{session.user.name || session.user.email}</div>
-              <div className="text-xs text-cream-dark/60 font-mono uppercase tracking-wider">
+              <div className="text-ink">{session.user.name || session.user.email}</div>
+              <div className="text-xs text-ink-dark/60 font-mono uppercase tracking-wider">
                 {role}
               </div>
             </div>
@@ -104,7 +104,7 @@ export default async function InStoreHome() {
       <main className="relative max-w-6xl mx-auto px-6 py-12">
         <div className="mb-8">
           <h1 className="font-display text-3xl font-bold tracking-tight">Mission Control</h1>
-          <p className="text-cream-dark/60 mt-1">
+          <p className="text-ink-dark/60 mt-1">
             Pick a station to begin your shift.
           </p>
         </div>
@@ -114,18 +114,18 @@ export default async function InStoreHome() {
             <Link
               key={t.href}
               href={t.href}
-              className="group relative block rounded-2xl border border-space-700 bg-space-900/60 backdrop-blur p-6 hover:border-saturn-500/60 hover:bg-space-800/70 transition-all hover:-translate-y-0.5"
+              className="group relative block rounded-2xl border border-surface-700 bg-surface-900/60 backdrop-blur p-6 hover:border-accent-500/60 hover:bg-surface-800/70 transition-all hover:-translate-y-0.5"
             >
               <div
                 className={`w-12 h-12 rounded-xl mb-4 bg-gradient-to-br ${t.accent} flex items-center justify-center text-2xl shadow-lg`}
               >
                 {t.emoji}
               </div>
-              <div className="font-display text-lg font-semibold mb-1 text-cream">
+              <div className="font-display text-lg font-semibold mb-1 text-ink">
                 {t.title}
               </div>
-              <div className="text-sm text-cream-dark/60">{t.description}</div>
-              <div className="mt-4 text-xs text-cream-dark/40 group-hover:text-saturn-400 transition-colors font-mono uppercase tracking-wider">
+              <div className="text-sm text-ink-dark/60">{t.description}</div>
+              <div className="mt-4 text-xs text-ink-dark/40 group-hover:text-accent-400 transition-colors font-mono uppercase tracking-wider">
                 Engage →
               </div>
             </Link>
@@ -133,7 +133,7 @@ export default async function InStoreHome() {
         </div>
 
         {!manager && (
-          <p className="mt-8 text-sm text-cream-dark/50">
+          <p className="mt-8 text-sm text-ink-dark/50">
             POS access requires manager or admin role. Ask an admin to upgrade your clearance.
           </p>
         )}

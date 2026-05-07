@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import EmptyDisplay from './EmptyDisplay';
+import { useTheme } from '@/components/ThemeContext';
 
 interface QueueOrder {
   id: string;
@@ -64,6 +64,8 @@ interface QueueBoardProps {
 }
 
 export default function QueueBoard({ embedded = false }: QueueBoardProps) {
+  const theme = useTheme();
+  const EmptyDisplay = theme.EmptyDisplay;
   const [received, setReceived] = useState<QueueOrder[]>([]);
   const [inProgress, setInProgress] = useState<QueueOrder[]>([]);
   const [ready, setReady] = useState<QueueOrder[]>([]);
@@ -148,13 +150,13 @@ export default function QueueBoard({ embedded = false }: QueueBoardProps) {
         <div className={embedded ? 'w-24' : 'w-48'} />
         <div className="flex flex-col items-center gap-1">
           <h1 className={`${headerText} font-display font-bold tracking-tight`}>
-            <span className="text-saturn-400">3rd</span>{' '}
-            <span className="text-cream">Space</span>{' '}
-            <span className="text-cream-dark">Coffee</span>
+            <span className="text-accent-400">{theme.brand.wordmark.lead}</span>{' '}
+            <span className="text-ink">{theme.brand.wordmark.middle}</span>{' '}
+            <span className="text-ink-dark">{theme.brand.wordmark.trail}</span>
           </h1>
           {!embedded && (
-            <p className="text-sm text-cream-dark/60 tracking-[0.3em] uppercase font-mono">
-              The Third Place — In Orbit
+            <p className="text-sm text-ink-dark/60 tracking-[0.3em] uppercase font-mono">
+              {theme.brand.tagline}
             </p>
           )}
         </div>
@@ -178,8 +180,8 @@ export default function QueueBoard({ embedded = false }: QueueBoardProps) {
           <section className="flex-1 flex flex-col min-w-0">
             <div className="mb-4 flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-neutral-400" />
-              <h2 className={`${columnHeader} font-display font-bold text-neutral-400 uppercase tracking-wider`}>
-                On the Pad
+              <h2 className={`${columnHeader} font-display font-bold text-ink-dark/70 uppercase tracking-wider`}>
+                {theme.status.RECEIVED}
               </h2>
               <span className={`ml-auto ${countText} text-neutral-500 font-mono`}>
                 {received.length}
@@ -208,8 +210,8 @@ export default function QueueBoard({ embedded = false }: QueueBoardProps) {
           <section className="flex-1 flex flex-col min-w-0">
             <div className="mb-4 flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-amber-500 animate-pulse" />
-              <h2 className={`${columnHeader} font-display font-bold text-saturn-400 uppercase tracking-wider`}>
-                T-minus & Counting
+              <h2 className={`${columnHeader} font-display font-bold text-accent-400 uppercase tracking-wider`}>
+                {theme.status.IN_PROGRESS}
               </h2>
               <span className={`ml-auto ${countText} text-neutral-500 font-mono`}>
                 {inProgress.length}
@@ -238,8 +240,8 @@ export default function QueueBoard({ embedded = false }: QueueBoardProps) {
           <section className="flex-1 flex flex-col min-w-0">
             <div className="mb-4 flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
-              <h2 className={`${columnHeader} font-display font-bold text-nebula-cyan uppercase tracking-wider`}>
-                Lift-off
+              <h2 className={`${columnHeader} font-display font-bold text-glow-1 uppercase tracking-wider`}>
+                {theme.status.READY}
               </h2>
               <span className={`ml-auto ${countText} text-neutral-500 font-mono`}>
                 {ready.length}

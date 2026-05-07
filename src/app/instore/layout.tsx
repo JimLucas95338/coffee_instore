@@ -8,7 +8,7 @@ export default function InStoreLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-space-950 text-cream">
+    <div className="min-h-screen bg-surface-950 text-ink">
       {children}
     </div>
   );

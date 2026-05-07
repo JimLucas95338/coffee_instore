@@ -5,6 +5,7 @@ import {
   generateReceiptStandard,
   type ReceiptItem,
 } from '@/lib/instore/generate-receipt';
+import { getActiveTheme } from '@/lib/theme';
 
 export async function GET(
   request: NextRequest,
@@ -48,6 +49,8 @@ export async function GET(
       };
     });
 
+    const theme = await getActiveTheme();
+
     const receiptData = {
       orderNumber: order.orderNumber,
       displayNumber: order.displayNumber,
@@ -60,6 +63,10 @@ export async function GET(
       paymentStatus: order.paymentStatus,
       source: order.source,
       createdAt: order.createdAt,
+      brand: {
+        header: theme.brand.receiptHeader,
+        address: theme.brand.receiptAddress,
+      },
     };
 
     const pdfBuffer = format === 'standard'

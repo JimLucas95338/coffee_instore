@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useInStoreCartStore, type InStoreCartItem, type InStoreAddOn } from '@/lib/instore/cart-store';
 import { calculateTax } from '@/lib/instore/tax';
 import { usePrintSettings, printCupLabel } from '@/lib/instore/print-settings';
+import { useTheme } from '@/components/ThemeContext';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -94,6 +95,7 @@ function getSizePrice(item: MenuItem, size: Size): number {
 // ---------------------------------------------------------------------------
 
 export default function KioskPage() {
+  const theme = useTheme();
   // --- Global state ---
   const cart = useInStoreCartStore();
 
@@ -339,21 +341,21 @@ export default function KioskPage() {
           className={`flex min-h-screen flex-col items-center justify-center px-6 transition-all duration-300 ease-out ${transitionClass}`}
         >
           <h1 className="mb-2 font-display text-5xl font-bold tracking-tight sm:text-6xl">
-            <span className="text-saturn-400">3rd</span>{' '}
-            <span className="text-cream">Space</span>{' '}
-            <span className="text-cream-dark">Coffee</span>
+            <span className="text-accent-400">{theme.brand.wordmark.lead}</span>{' '}
+            <span className="text-ink">{theme.brand.wordmark.middle}</span>{' '}
+            <span className="text-ink-dark">{theme.brand.wordmark.trail}</span>
           </h1>
-          <p className="mb-14 text-lg text-cream-dark/70 font-mono uppercase tracking-[0.3em]">
-            The Third Place — In Orbit
+          <p className="mb-14 text-lg text-ink-dark/70 font-mono uppercase tracking-[0.3em]">
+            {theme.brand.tagline}
           </p>
           <button
             onClick={() => {
               cart.clearCart();
               goTo('menu');
             }}
-            className="group relative rounded-2xl bg-saturn-500 px-16 py-6 text-2xl font-display font-semibold text-space-950 shadow-lg shadow-saturn-500/30 transition-all hover:bg-saturn-400 hover:shadow-saturn-500/50 active:scale-95"
+            className="group relative rounded-2xl bg-accent-500 px-16 py-6 text-2xl font-display font-semibold text-surface-950 shadow-lg shadow-accent-500/30 transition-all hover:bg-accent-400 hover:shadow-accent-500/50 active:scale-95"
           >
-            <span className="relative z-10">Launch Order</span>
+            <span className="relative z-10">{theme.brand.startOrderLabel}</span>
             <span className="absolute inset-0 animate-pulse rounded-2xl bg-amber-400/30 blur-xl" />
           </button>
         </div>

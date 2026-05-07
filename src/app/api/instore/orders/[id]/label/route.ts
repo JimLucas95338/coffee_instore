@@ -5,6 +5,7 @@ import {
   generateCupLabelReceipt,
   type CupLabelItem,
 } from '@/lib/instore/generate-cup-label';
+import { getActiveTheme } from '@/lib/theme';
 
 export async function GET(
   request: NextRequest,
@@ -51,12 +52,14 @@ export async function GET(
       };
     });
 
+    const theme = await getActiveTheme();
     const labelData = {
       displayNumber: order.displayNumber,
       orderNumber: order.orderNumber,
       customerName: order.customerName,
       items: labelItems,
       createdAt: order.createdAt,
+      brandHeader: theme.brand.receiptHeader,
     };
 
     const pdfBuffer =

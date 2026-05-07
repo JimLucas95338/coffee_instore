@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useInStoreCartStore, type InStoreCartItem } from '@/lib/instore/cart-store';
 import { calculateTax } from '@/lib/instore/tax';
 import { usePrintSettings, printCupLabel } from '@/lib/instore/print-settings';
+import { useTheme } from '@/components/ThemeContext';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -111,12 +112,7 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
   PICKED_UP: 'bg-blue-600 text-blue-50',
 };
 
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  RECEIVED: 'On the Pad',
-  IN_PROGRESS: 'T-minus & Counting',
-  READY: 'Lift-off',
-  PICKED_UP: 'In Orbit',
-};
+// STATUS_LABELS now comes from the active theme via useTheme().status
 
 const NEXT_STATUS: Record<OrderStatus, OrderStatus | null> = {
   RECEIVED: 'IN_PROGRESS',
@@ -373,6 +369,8 @@ function CustomizeModal({
 // ---------------------------------------------------------------------------
 
 export default function BaristaPosPage() {
+  const theme = useTheme();
+  const STATUS_LABELS = theme.status;
   // Menu
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [menuLoading, setMenuLoading] = useState(true);

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Space_Grotesk, Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
+import { getActiveTheme, renderThemeStyle } from '@/lib/theme';
 
 const display = Space_Grotesk({
   subsets: ['latin'],
@@ -25,28 +26,34 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#0a0e27',
 };
 
-export const metadata: Metadata = {
-  title: '3rd Space Coffee — In Store',
-  description:
-    'In-store ordering for 3rd Space Coffee: kiosk, POS, customer display, and queue.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const theme = await getActiveTheme();
+  return {
+    title: `${theme.brand.fullName} — In Store`,
+    description: `In-store ordering for ${theme.brand.fullName}: kiosk, POS, customer display, and queue.`,
+  };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const theme = await getActiveTheme();
   return (
     <html
       lang="en"
+      data-theme={theme.id}
       suppressHydrationWarning
       className={`${display.variable} ${sans.variable} ${mono.variable}`}
     >
+      <head>
+        <style dangerouslySetInnerHTML={{ __html: renderThemeStyle(theme) }} />
+      </head>
       <body className="font-sans">
-        <Providers>{children}</Providers>
+        <Providers theme={theme}>{children}</Providers>
       </body>
     </html>
   );

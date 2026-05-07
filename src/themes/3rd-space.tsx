@@ -45,6 +45,20 @@ const theme: Theme = {
     READY: 'Lift-off',
     PICKED_UP: 'In Orbit',
   },
+  hub: {
+    title: 'Mission Control',
+    subtitle: 'Pick a station to begin your shift.',
+    engageLabel: 'Engage →',
+    tileEmoji: {
+      pos: '🛰️',
+      queue: '☄️',
+      display: '🪐',
+      kiosk: '🚀',
+      help: '📖',
+      menuAdmin: '🛸',
+      users: '👨‍🚀',
+    },
+  },
   EmptyDisplay: RocketEmptyDisplay,
   markStyle: 'orbital',
 };

@@ -45,6 +45,20 @@ const theme: Theme = {
     READY: 'Ready',
     PICKED_UP: 'Picked Up',
   },
+  hub: {
+    title: 'Café Hub',
+    subtitle: 'Pick a station to begin your shift.',
+    engageLabel: 'Open →',
+    tileEmoji: {
+      pos: '🧾',
+      queue: '☕',
+      display: '📺',
+      kiosk: '🛒',
+      help: '📖',
+      menuAdmin: '📋',
+      users: '👥',
+    },
+  },
   EmptyDisplay: CoffeeCupEmptyDisplay,
   markStyle: 'leaf',
 };

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions, isAdmin, isManager } from '@/lib/auth';
 import { Brand } from '@/components/Brand';
+import { getActiveTheme } from '@/lib/theme';
 import HomeLogoutButton from './HomeLogoutButton';
 
 export const dynamic = 'force-dynamic';
@@ -24,34 +25,36 @@ export default async function InStoreHome() {
   const role = session.user.role;
   const admin = isAdmin(role);
   const manager = isManager(role);
+  const theme = await getActiveTheme();
+  const e = theme.hub.tileEmoji;
 
   const tiles: Tile[] = [
     {
       href: '/instore/pos',
       title: 'POS',
       description: 'Take orders at the counter',
-      emoji: '🛰️',
+      emoji: e.pos,
       accent: 'from-accent-500 to-accent-700',
     },
     {
       href: '/instore/queue',
       title: 'Queue',
       description: 'Mark drinks as in progress, ready, picked up',
-      emoji: '☄️',
+      emoji: e.queue,
       accent: 'from-glow-1 to-blue-600',
     },
     {
       href: '/instore/display',
       title: 'Customer Display',
       description: 'Menu board + live order queue',
-      emoji: '🪐',
+      emoji: e.display,
       accent: 'from-glow-3 to-glow-2',
     },
     {
       href: '/instore/kiosk',
       title: 'Kiosk',
       description: 'Customer self-serve ordering',
-      emoji: '🚀',
+      emoji: e.kiosk,
       accent: 'from-accent-400 to-glow-2',
     },
   ];
@@ -60,7 +63,7 @@ export default async function InStoreHome() {
     href: '/help',
     title: 'Staff Guide',
     description: 'How to run the system, status flow, troubleshooting',
-    emoji: '📖',
+    emoji: e.help,
     accent: 'from-glow-1 to-surface-700',
   });
 
@@ -70,14 +73,14 @@ export default async function InStoreHome() {
         href: '/admin/menu',
         title: 'Menu Admin',
         description: 'Add, edit, hide menu items and add-ons',
-        emoji: '🛸',
-        accent: 'from-accent-600 to-accent-800',
+        emoji: e.menuAdmin,
+        accent: 'from-accent-600 to-accent-700',
       },
       {
         href: '/admin/users',
         title: 'Users',
         description: 'Manage staff accounts and roles',
-        emoji: '👨‍🚀',
+        emoji: e.users,
         accent: 'from-glow-3 to-surface-700',
       }
     );
@@ -103,10 +106,8 @@ export default async function InStoreHome() {
 
       <main className="relative max-w-6xl mx-auto px-6 py-12">
         <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold tracking-tight">Mission Control</h1>
-          <p className="text-ink-dark/60 mt-1">
-            Pick a station to begin your shift.
-          </p>
+          <h1 className="font-display text-3xl font-bold tracking-tight">{theme.hub.title}</h1>
+          <p className="text-ink-dark/60 mt-1">{theme.hub.subtitle}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -126,7 +127,7 @@ export default async function InStoreHome() {
               </div>
               <div className="text-sm text-ink-dark/60">{t.description}</div>
               <div className="mt-4 text-xs text-ink-dark/40 group-hover:text-accent-400 transition-colors font-mono uppercase tracking-wider">
-                Engage →
+                {theme.hub.engageLabel}
               </div>
             </Link>
           ))}
@@ -134,7 +135,7 @@ export default async function InStoreHome() {
 
         {!manager && (
           <p className="mt-8 text-sm text-ink-dark/50">
-            POS access requires manager or admin role. Ask an admin to upgrade your clearance.
+            POS access requires manager or admin role. Ask an admin to upgrade your access.
           </p>
         )}
       </main>

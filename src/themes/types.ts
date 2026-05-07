@@ -56,6 +56,25 @@ export interface StatusLabels {
   PICKED_UP: string;
 }
 
+export interface HubConfig {
+  /** Big heading at the top of /instore/home (e.g. "Mission Control"). */
+  title: string;
+  /** One-line subtitle under the heading. */
+  subtitle: string;
+  /** Footer CTA on each tile (e.g. "Engage →" / "Open →"). */
+  engageLabel: string;
+  /** Emoji shown on each tile. */
+  tileEmoji: {
+    pos: string;
+    queue: string;
+    display: string;
+    kiosk: string;
+    help: string;
+    menuAdmin: string;
+    users: string;
+  };
+}
+
 export interface Theme {
   id: ThemeId;
   /** Human-friendly theme name shown in the admin picker. */
@@ -65,6 +84,7 @@ export interface Theme {
   palette: ThemePalette;
   brand: BrandText;
   status: StatusLabels;
+  hub: HubConfig;
   /** Component rendered on the customer Display when the queue is empty. */
   EmptyDisplay: ComponentType;
   /**

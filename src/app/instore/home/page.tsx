@@ -37,9 +37,16 @@ export default async function InStoreHome() {
       accent: 'from-accent-500 to-accent-700',
     },
     {
+      href: '/instore/bar',
+      title: 'Bar Station',
+      description: 'Full barista view — drink details, timer, reprint',
+      emoji: e.bar,
+      accent: 'from-accent-400 to-glow-1',
+    },
+    {
       href: '/instore/queue',
       title: 'Queue',
-      description: 'Mark drinks as in progress, ready, picked up',
+      description: 'Quick status board (taps only, no drink details)',
       emoji: e.queue,
       accent: 'from-glow-1 to-blue-600',
     },

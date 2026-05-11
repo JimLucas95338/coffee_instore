@@ -51,6 +51,7 @@ const theme: Theme = {
     engageLabel: 'Open →',
     tileEmoji: {
       pos: '🧾',
+      bar: '🫖',
       queue: '☕',
       display: '📺',
       kiosk: '🛒',

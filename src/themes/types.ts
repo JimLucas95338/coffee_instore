@@ -66,6 +66,7 @@ export interface HubConfig {
   /** Emoji shown on each tile. */
   tileEmoji: {
     pos: string;
+    bar: string;
     queue: string;
     display: string;
     kiosk: string;

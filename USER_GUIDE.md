@@ -41,8 +41,13 @@ Staff-operated counter ordering. Manager or admin login required. Same menu as t
 - Loyalty phone lookup + redemption
 - Daily sales summary at the bottom
 
+### Bar Station (`/instore/bar`)
+**Primary barista screen.** Full detail cards — every customization (size, milk, temp, add-ons, customer notes) is visible up front so you can build a drink without tapping anything. Each card has a live elapsed timer (turns amber after 4 min, red after 8 min). Action buttons advance the status; there are also **🖨 Label** (reprint cup label) and **Cancel** buttons per card. A sticky stats strip at the top shows today's count, last hour, and average make-time. Plays a short blip when a new order arrives. No sign-in required.
+
 ### Queue (`/instore/queue`)
-Barista station. Shows every active order in the launch narrative columns. Tap an order's button to advance its status:
+Lightweight status board. Three columns, tap to advance status. No drink details — use this when you don't need the customizations visible and just want the fastest possible tap workflow.
+
+Both Bar Station and Queue move orders through:
 
 `On the Pad → T-minus & Counting → Lift-off → In Orbit (picked up)`
 
@@ -67,7 +72,9 @@ Every order moves through four states. The labels are space-themed; the underlyi
 | **Lift-off** | `READY` | Drink is done — call the customer. Chime plays. |
 | **In Orbit** | `PICKED_UP` | Customer has the cup. Drops off the queue/display. |
 
-Transitions are one-way under normal flow. To cancel mid-flight, manager/admin can hit cancel from POS.
+Transitions are one-way under normal flow. To cancel mid-flight: Bar Station has a per-card Cancel button; POS can also cancel from the order queue.
+
+> **Theme note:** these status labels are the 3rd Space Coffee theme defaults. Switching to the Eco Delight Coffee theme renames them to the conventional `Received / In Progress / Ready / Picked Up`. The underlying DB values never change.
 
 ---
 
@@ -78,7 +85,7 @@ Transitions are one-way under normal flow. To cancel mid-flight, manager/admin c
 2. Open https://coffeeinstore.vercel.app on each device.
 3. **Customer iPad:** navigate to `/instore/kiosk` and bookmark to home screen.
 4. **Counter iPad:** sign in as a manager, leave on `/instore/pos`.
-5. **Bar iPad:** navigate to `/instore/queue` (sign-in not required to view).
+5. **Bar iPad:** navigate to `/instore/bar` (the full barista view; `/instore/queue` is the tap-only alternative). Sign-in not required.
 6. **External display:** point at `/instore/display`.
 7. Verify the printer is connected (see §6).
 
@@ -168,6 +175,29 @@ You **cannot** demote yourself or deactivate yourself — the system blocks both
 
 ---
 
+## 8.5. Brand & theme (admin only)
+
+`/admin/brand` switches the active theme. Two presets ship today:
+
+- **3rd Space Coffee** — retro space age. Saturn orange + deep navy palette, rocket-and-planet customer display, status labels read `On the Pad / T-minus & Counting / Lift-off / In Orbit`, hub heading is **Mission Control**.
+- **Eco Delight Coffee** — warm coffeehouse. Forest-green + espresso-brown palette, coffee-cup customer display, conventional status labels (`Received / In Progress / Ready / Picked Up`), hub heading is **Café Hub**.
+
+Switching:
+1. Open `/admin/brand`.
+2. Click **Apply** on the inactive theme's card.
+3. Confirm the prompt. The page hard-reloads so the new theme paints without flash.
+
+Effect on the rest of the system:
+- Page chrome, accents, fonts, headings repaint everywhere.
+- Wordmark, tagline, brand mark glyph swap.
+- Status labels swap (Bar Station, Queue, Customer Display, POS).
+- Receipt and cup-label PDF headers swap.
+- Hub tile emojis and heading swap (rocket/planet vs. coffee/teapot).
+
+Adding a third theme requires a code change — drop a new file under `src/themes/` exporting the same shape, register it in `src/themes/index.ts`, and add a CSS-variable block in `globals.css`. The Brand admin picks it up automatically.
+
+---
+
 ## 9. Payments — current state
 
 > **Important:** the system does not actually process card payments today.
@@ -214,6 +244,7 @@ See `TODO.md` in the repo for the full list. Highlights:
 - **Mark Paid** UI for cash orders
 - **Add-on create/edit/delete** UI (today only the toggle works)
 - **Loyalty member lookup** UI
+- **Recipe reference** screen for new barista training
 
 ---
 
@@ -225,10 +256,12 @@ See `TODO.md` in the repo for the full list. Highlights:
 | `/instore/home` | Mission Control (staff hub) | required |
 | `/instore/kiosk` | Customer self-serve | public |
 | `/instore/pos` | Staff POS | manager+ |
-| `/instore/queue` | Barista queue | public (view) |
+| `/instore/bar` | **Bar Station** (full barista view with detail, timer, reprint) | public |
+| `/instore/queue` | Lightweight tap-only queue | public |
 | `/instore/display` | Customer-facing menu+queue | public |
 | `/admin/menu` | Menu items + add-ons | admin |
 | `/admin/users` | Staff accounts | admin |
+| `/admin/brand` | Theme + brand switcher | admin |
 | `/help` | This guide | required |
 | `/login` | Sign-in screen | n/a |
 

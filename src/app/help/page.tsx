@@ -3,18 +3,22 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { Brand } from '@/components/Brand';
+import { getActiveTheme } from '@/lib/theme';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Staff Guide — 3rd Space Coffee',
-};
+export async function generateMetadata() {
+  const theme = await getActiveTheme();
+  return { title: `Staff Guide — ${theme.brand.fullName}` };
+}
 
 export default async function HelpPage() {
   const session = await getServerSession(authOptions);
   if (!session) {
     redirect('/login?callbackUrl=/help');
   }
+  const theme = await getActiveTheme();
+  const status = theme.status;
 
   return (
     <div className="min-h-screen bg-surface-950 text-ink relative overflow-hidden">
@@ -33,7 +37,7 @@ export default async function HelpPage() {
 
       <main className="relative max-w-4xl mx-auto px-6 py-10 prose-ink">
         <p className="text-sm text-ink-dark/60 italic mb-8">
-          The Third Place — In Orbit. Everything a barista, manager, or admin needs to run the in-store system.
+          {theme.brand.tagline}. Everything a barista, manager, or admin needs to run the in-store system.
         </p>
 
         <Toc />
@@ -61,7 +65,7 @@ export default async function HelpPage() {
 
         <Section id="stations" number="2" title="The stations">
           <Definition
-            term="Mission Control"
+            term={theme.hub.title}
             url="/instore/home"
             description="Signed-in staff hub. Tile shortcuts to every screen. Lives at the brand origin URL."
           />
@@ -78,10 +82,16 @@ export default async function HelpPage() {
             description="Staff counter ordering. Customer name, loyalty lookup, daily sales summary."
           />
           <Definition
+            term="Bar Station"
+            url="/instore/bar"
+            access="public"
+            description="Primary barista screen. Full drink details, per-card timer, reprint label, cancel, stats strip. Plays a blip on each new order."
+          />
+          <Definition
             term="Queue"
             url="/instore/queue"
-            access="public (view)"
-            description="Barista station. Tap to advance status. Chimes when an order hits Lift-off."
+            access="public"
+            description={`Lightweight tap-only status board. No drink details. Chimes when an order hits ${status.READY}.`}
           />
           <Definition
             term="Customer Display"
@@ -93,15 +103,16 @@ export default async function HelpPage() {
 
         <Section id="lifecycle" number="3" title="The order lifecycle">
           <p className="text-ink-dark mb-4">
-            Every order moves through four space-themed states. The DB enums are unchanged — just the labels.
+            Every order moves through four states. The DB enum values never
+            change; the labels you see come from the active theme.
           </p>
           <Table
             headers={['Display label', 'DB enum', 'Meaning']}
             rows={[
-              ['On the Pad', 'RECEIVED', 'Order placed, sitting in the queue.'],
-              ['T-minus & Counting', 'IN_PROGRESS', 'Barista is making the drink.'],
-              ['Lift-off', 'READY', 'Drink is done — call the customer. Chime plays.'],
-              ['In Orbit', 'PICKED_UP', 'Customer has the cup. Drops off the queue.'],
+              [status.RECEIVED, 'RECEIVED', 'Order placed, sitting in the queue.'],
+              [status.IN_PROGRESS, 'IN_PROGRESS', 'Barista is making the drink.'],
+              [status.READY, 'READY', 'Drink is done — call the customer. Chime plays.'],
+              [status.PICKED_UP, 'PICKED_UP', 'Customer has the cup. Drops off the queue.'],
             ]}
           />
         </Section>
@@ -113,7 +124,7 @@ export default async function HelpPage() {
             <li>Open coffeeinstore.vercel.app on each device.</li>
             <li>Customer iPad → <Code>/instore/kiosk</Code></li>
             <li>Counter iPad → sign in as manager, leave on <Code>/instore/pos</Code></li>
-            <li>Bar iPad → <Code>/instore/queue</Code></li>
+            <li>Bar iPad → <Code>/instore/bar</Code> (use <Code>/instore/queue</Code> for tap-only)</li>
             <li>External display → <Code>/instore/display</Code></li>
             <li>Verify the printer is connected.</li>
           </ol>
@@ -122,7 +133,10 @@ export default async function HelpPage() {
           <ol className="list-decimal pl-6 space-y-1 text-ink-dark">
             <li>Note the totals from the POS Daily Sales Summary.</li>
             <li>Reconcile cash drawer against the cash subtotal.</li>
-            <li>Investigate or cancel any orders still on On the Pad / T-minus.</li>
+            <li>
+              Investigate or cancel any orders still on{' '}
+              <strong>{status.RECEIVED}</strong> or <strong>{status.IN_PROGRESS}</strong>.
+            </li>
             <li>Sign out everywhere.</li>
           </ol>
         </Section>
@@ -189,6 +203,19 @@ export default async function HelpPage() {
           </ul>
         </Section>
 
+        <Section id="brand" number="7b" title="Brand & theme (admin)">
+          <p className="text-ink-dark mb-3">
+            <Link href="/admin/brand" className="text-accent-400 hover:underline">
+              /admin/brand
+            </Link>{' '}
+            — switch between presets (3rd Space Coffee, Eco Delight Coffee). The
+            palette, wordmark, brand mark, status labels, hub heading, tile
+            emojis, customer-display scene, and receipt/cup-label headers all
+            swap together. Click Apply on the other card; the page hard-reloads
+            so the new theme paints without flash.
+          </p>
+        </Section>
+
         <Section id="users" number="8" title="Users and roles (admin)">
           <p className="text-ink-dark mb-3">
             <Link href="/admin/users" className="text-accent-400 hover:underline">
@@ -250,14 +277,16 @@ export default async function HelpPage() {
           <Table
             headers={['URL', 'What it is', 'Sign-in']}
             rows={[
-              ['/', 'Redirects to Mission Control', 'required'],
-              ['/instore/home', 'Mission Control', 'required'],
+              ['/', `Redirects to ${theme.hub.title}`, 'required'],
+              ['/instore/home', theme.hub.title, 'required'],
               ['/instore/kiosk', 'Customer self-serve', 'public'],
               ['/instore/pos', 'Staff POS', 'manager+'],
-              ['/instore/queue', 'Barista queue', 'public'],
+              ['/instore/bar', 'Bar Station (full barista view)', 'public'],
+              ['/instore/queue', 'Tap-only status board', 'public'],
               ['/instore/display', 'Customer-facing display', 'public'],
               ['/admin/menu', 'Menu items + add-ons', 'admin'],
               ['/admin/users', 'Staff accounts', 'admin'],
+              ['/admin/brand', 'Theme + brand switcher', 'admin'],
               ['/help', 'This guide', 'required'],
             ]}
           />
@@ -284,6 +313,7 @@ function Toc() {
     ['menu', '5. Menu management'],
     ['receipts', '6. Receipts & labels'],
     ['loyalty', '7. Loyalty'],
+    ['brand', '7b. Brand & theme'],
     ['users', '8. Users & roles'],
     ['payments', '9. Payments'],
     ['troubleshoot', '10. Troubleshooting'],

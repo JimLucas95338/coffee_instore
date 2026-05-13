@@ -31,6 +31,12 @@ export default async function AdminLayout({
               Admin
             </span>
             <nav className="flex gap-5 text-sm">
+              <Link href="/admin/orders" className="text-ink-dark/80 hover:text-accent-400 transition-colors">
+                Orders
+              </Link>
+              <Link href="/admin/reports" className="text-ink-dark/80 hover:text-accent-400 transition-colors">
+                Reports
+              </Link>
               <Link href="/admin/menu" className="text-ink-dark/80 hover:text-accent-400 transition-colors">
                 Menu
               </Link>
@@ -42,9 +48,6 @@ export default async function AdminLayout({
               </Link>
               <Link href="/instore/home" className="text-ink-dark/80 hover:text-accent-400 transition-colors">
                 Hub
-              </Link>
-              <Link href="/instore/pos" className="text-ink-dark/80 hover:text-accent-400 transition-colors">
-                POS
               </Link>
             </nav>
           </div>

@@ -43,4 +43,11 @@ What to add:
 - Add-on **create/edit/delete** UI (today only `isActive` toggle exists)
 - `/instore/menu` redirect → `/instore/display` for backwards-compat
   with old bookmarks
-- Cash drawer "Mark Paid" button on `/instore/queue` for `PENDING` orders
+- **Partial refunds** (today's refunds are full-order only)
+- **Image upload** for menu items (currently a URL field; want
+  paste-from-clipboard or drag-drop into Vercel Blob)
+- **Employee time tracking** + per-employee sales attribution (schema
+  already has `employeeId` on orders, POS doesn't capture it)
+- **Real-time updates** via SSE/WebSockets — Bar Station + Display
+  poll every 4 seconds today
+- **Loyalty member lookup/comp UI**

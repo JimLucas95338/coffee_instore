@@ -203,6 +203,36 @@ export default async function HelpPage() {
           </ul>
         </Section>
 
+        <Section id="orders" number="7a" title="Orders & refunds (manager/admin)">
+          <p className="text-ink-dark mb-3">
+            <Link href="/admin/orders" className="text-accent-400 hover:underline">
+              /admin/orders
+            </Link>{' '}
+            — date-range list of every in-store order. Click a row to expand
+            full details (items, totals, payment, loyalty). Hit{' '}
+            <strong>Refund</strong> on any non-refunded row, enter a reason,
+            and the order is flagged + excluded from net sales. Today's
+            refund is bookkeeping-only; the Stripe refund API call drops in
+            at the same spot when payments are wired up.
+          </p>
+          <p className="text-ink-dark">
+            For cash collected at the bar, the Bar Station card now shows{' '}
+            <strong>💵 Mark Paid</strong> for any order still <Code>PENDING</Code>.
+          </p>
+        </Section>
+
+        <Section id="reports" number="7c" title="Reports (manager/admin)">
+          <p className="text-ink-dark mb-3">
+            <Link href="/admin/reports" className="text-accent-400 hover:underline">
+              /admin/reports
+            </Link>{' '}
+            — sales summary over a custom range. Presets for Today, Last 7
+            days, Last 30 days. Headline cards (gross, net, orders, avg
+            ticket, refunds, tax), revenue-by-day bars, top items, revenue
+            by category, and by payment method.
+          </p>
+        </Section>
+
         <Section id="brand" number="7b" title="Brand & theme (admin)">
           <p className="text-ink-dark mb-3">
             <Link href="/admin/brand" className="text-accent-400 hover:underline">
@@ -284,6 +314,8 @@ export default async function HelpPage() {
               ['/instore/bar', 'Bar Station (full barista view)', 'public'],
               ['/instore/queue', 'Tap-only status board', 'public'],
               ['/instore/display', 'Customer-facing display', 'public'],
+              ['/admin/orders', 'Orders + refunds', 'manager+'],
+              ['/admin/reports', 'Sales reports', 'manager+'],
               ['/admin/menu', 'Menu items + add-ons', 'admin'],
               ['/admin/users', 'Staff accounts', 'admin'],
               ['/admin/brand', 'Theme + brand switcher', 'admin'],
@@ -313,7 +345,9 @@ function Toc() {
     ['menu', '5. Menu management'],
     ['receipts', '6. Receipts & labels'],
     ['loyalty', '7. Loyalty'],
+    ['orders', '7a. Orders & refunds'],
     ['brand', '7b. Brand & theme'],
+    ['reports', '7c. Reports'],
     ['users', '8. Users & roles'],
     ['payments', '9. Payments'],
     ['troubleshoot', '10. Troubleshooting'],

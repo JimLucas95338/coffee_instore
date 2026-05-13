@@ -1236,6 +1236,11 @@ model InStoreOrder {
   loyaltyPointsEarned   Int?
   loyaltyPointsRedeemed Int?
   loyaltyDiscount       Float?
+  // Refund fields — set when a manager/admin voids the order.
+  refundedAt            DateTime?
+  refundedAmount        Float?
+  refundedById          String?
+  refundReason          String?
   items                 InStoreOrderItem[]
   createdAt             DateTime              @default(now())
   updatedAt             DateTime              @updatedAt

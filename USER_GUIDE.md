@@ -198,6 +198,30 @@ Adding a third theme requires a code change — drop a new file under `src/theme
 
 ---
 
+## 8.6. Orders & refunds (admin/manager)
+
+`/admin/orders` shows every in-store order in a date range. Each row expands to reveal item details, totals, and payment metadata. A manager or admin can **Refund** any order that hasn't already been refunded:
+
+1. Click **Refund** on the order row.
+2. Enter a reason (required).
+3. Confirm.
+
+The order stays in history but is flagged **Refunded** and excluded from net sales. Today's payment integration is honor-system, so the refund is a bookkeeping action — when Stripe Terminal is wired up, this is the spot that calls the Stripe refund API.
+
+**Mark Paid** (Bar Station): cash orders sit `PENDING` until someone hits the **💵 Mark Paid** button on the Bar Station card. That call flips `paymentStatus` to `PAID` and stamps `paidAt`. Cards are still auto-marked PAID on submit (see §9).
+
+## 8.7. Reports (admin/manager)
+
+`/admin/reports` summarizes sales over a date range:
+
+- **Headline cards:** gross, net (after refunds), order count, avg ticket, refund total + count, tax collected.
+- **Revenue by day** — bar chart, one row per day in the range.
+- **Top items** — by quantity sold, with category and revenue.
+- **Revenue by category.**
+- **By payment method.**
+
+Presets: **Today**, **Last 7 days**, **Last 30 days**. Or pick any custom range.
+
 ## 9. Payments — current state
 
 > **Important:** the system does not actually process card payments today.
@@ -206,6 +230,8 @@ Adding a third theme requires a code change — drop a new file under `src/theme
 |---|---|
 | **Cash** | Order created with status `PENDING`. Staff confirms cash collected, then a future "Mark Paid" button (not built yet) will flip it to `PAID`. For now the daily summary shows it as cash. |
 | **Card / Apple Pay** | Order is auto-marked `PAID` immediately on the honor system. **Run the customer's card on a separate device first.** |
+
+For cash orders that need to flip from `PENDING` to `PAID`, use the **💵 Mark Paid** button on the order's Bar Station card after collecting the cash. For any order that needs to be reversed, use **Refund** on `/admin/orders` (manager+).
 
 Real Stripe Terminal integration is on the roadmap — see `TODO.md` in the repo.
 
@@ -241,9 +267,11 @@ Real Stripe Terminal integration is on the roadmap — see `TODO.md` in the repo
 
 See `TODO.md` in the repo for the full list. Highlights:
 - **Stripe Terminal** integration for real card payments (Tap to Pay on iPhone or hardware reader)
-- **Mark Paid** UI for cash orders
 - **Add-on create/edit/delete** UI (today only the toggle works)
 - **Loyalty member lookup** UI
+- **Image upload** for menu items (currently a URL field)
+- **Employee time tracking** + per-employee sales
+- **Partial refunds** (today's refunds are full-order only)
 - **Recipe reference** screen for new barista training
 
 ---
@@ -259,6 +287,8 @@ See `TODO.md` in the repo for the full list. Highlights:
 | `/instore/bar` | **Bar Station** (full barista view with detail, timer, reprint) | public |
 | `/instore/queue` | Lightweight tap-only queue | public |
 | `/instore/display` | Customer-facing menu+queue | public |
+| `/admin/orders` | Order history + refunds | manager+ |
+| `/admin/reports` | Sales reports | manager+ |
 | `/admin/menu` | Menu items + add-ons | admin |
 | `/admin/users` | Staff accounts | admin |
 | `/admin/brand` | Theme + brand switcher | admin |

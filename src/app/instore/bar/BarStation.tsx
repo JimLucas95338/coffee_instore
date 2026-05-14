@@ -155,14 +155,65 @@ export default function BarStation() {
     }
   }, []);
 
+  // Live order stream via SSE, with a polling fallback if the EventSource
+  // fails to connect (older proxies, captive portals).
   useEffect(() => {
-    fetchActive();
+    let es: EventSource | null = null;
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
+    let fellBack = false;
+
+    function applyOrders(rawOrders: Order[]) {
+      setError(false);
+
+      const nextIds = new Set(rawOrders.map((o) => o.id));
+      if (!isFirstFetchRef.current) {
+        const isNew = rawOrders.some((o) => !knownIdsRef.current.has(o.id));
+        if (isNew) playBlip();
+      }
+      isFirstFetchRef.current = false;
+      knownIdsRef.current = nextIds;
+
+      // Oldest first — those need to be made next.
+      const sorted = [...rawOrders].sort(
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+      setOrders(sorted);
+    }
+
+    function startPolling() {
+      fellBack = true;
+      fetchActive();
+      pollInterval = setInterval(fetchActive, POLL_MS);
+    }
+
+    try {
+      es = new EventSource('/api/instore/orders/stream?status=RECEIVED,IN_PROGRESS,READY');
+      es.addEventListener('orders', (event) => {
+        try {
+          applyOrders(JSON.parse((event as MessageEvent).data));
+        } catch {
+          // ignore malformed payloads — next event will recover
+        }
+      });
+      es.addEventListener('error', () => {
+        // EventSource auto-reconnects; only fall back to polling if it keeps
+        // failing. CLOSED means the browser gave up.
+        if (es && es.readyState === EventSource.CLOSED && !fellBack) {
+          es.close();
+          startPolling();
+        }
+      });
+    } catch {
+      startPolling();
+    }
+
     fetchTodayStats();
-    const i1 = setInterval(fetchActive, POLL_MS);
-    const i2 = setInterval(fetchTodayStats, 30_000);
+    const statsInterval = setInterval(fetchTodayStats, 30_000);
+
     return () => {
-      clearInterval(i1);
-      clearInterval(i2);
+      es?.close();
+      if (pollInterval) clearInterval(pollInterval);
+      clearInterval(statsInterval);
     };
   }, [fetchActive, fetchTodayStats]);
 

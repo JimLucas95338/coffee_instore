@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions, isManager } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { audit } from '@/lib/audit';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,6 +33,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    await audit({
+      action: 'MENU_ITEM_CREATED',
+      actorId: session.user.id,
+      actorEmail: session.user.email,
+      targetType: 'MenuItem',
+      targetId: item.id,
+      metadata: { name: item.name, category: item.category, basePrice: item.basePrice },
+    });
+
     return NextResponse.json(item, { status: 201 });
   } catch (error) {
     console.error('Error creating menu item:', error);
@@ -52,7 +62,20 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Item ID required' }, { status: 400 });
     }
 
+    const before = await db.menuItem.findUnique({
+      where: { id },
+      select: { name: true, category: true },
+    });
     await db.menuItem.delete({ where: { id } });
+
+    await audit({
+      action: 'MENU_ITEM_DELETED',
+      actorId: session.user.id,
+      actorEmail: session.user.email,
+      targetType: 'MenuItem',
+      targetId: id,
+      metadata: before ? { name: before.name, category: before.category } : null,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
@@ -83,10 +106,33 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Item ID required' }, { status: 400 });
     }
 
+    const before = await db.menuItem.findUnique({ where: { id } });
     const updated = await db.menuItem.update({
       where: { id },
       data,
     });
+
+    // Specifically call out hide/show toggles since those are the most common
+    // operational action.
+    if (typeof data.isActive === 'boolean' && before && before.isActive !== data.isActive) {
+      await audit({
+        action: data.isActive ? 'MENU_ITEM_SHOWN' : 'MENU_ITEM_HIDDEN',
+        actorId: session.user.id,
+        actorEmail: session.user.email,
+        targetType: 'MenuItem',
+        targetId: id,
+        metadata: { name: updated.name, category: updated.category },
+      });
+    } else {
+      await audit({
+        action: 'MENU_ITEM_UPDATED',
+        actorId: session.user.id,
+        actorEmail: session.user.email,
+        targetType: 'MenuItem',
+        targetId: id,
+        metadata: { name: updated.name, changes: data },
+      });
+    }
 
     return NextResponse.json(updated);
   } catch (error) {

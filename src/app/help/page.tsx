@@ -236,6 +236,30 @@ export default async function HelpPage() {
           </p>
         </Section>
 
+        <Section id="audit" number="7f" title="Audit log (admin)">
+          <p className="text-ink-dark mb-3">
+            <Link href="/admin/audit" className="text-accent-400 hover:underline">
+              /admin/audit
+            </Link>{' '}
+            — chronological log of consequential admin actions: refunds, menu
+            changes, role changes, password resets, loyalty adjustments, and
+            theme switches. Filter chips on top, plus free-text search across
+            actor email and event metadata. Use it to answer &quot;who did X
+            and when?&quot;
+          </p>
+        </Section>
+
+        <Section id="realtime" number="7g" title="Real-time + PWA">
+          <p className="text-ink-dark">
+            Bar Station, Queue, and Customer Display now receive order updates
+            via Server-Sent Events (1–2s, not 4s polling). The app is also a
+            Progressive Web App — Add to Home Screen on iPad Safari, or click
+            the install icon in desktop Chrome, to run as a standalone app.
+            The kiosk shell is cached so brief internet hiccups don&apos;t
+            show a &quot;no internet&quot; page.
+          </p>
+        </Section>
+
         <Section id="discounts" number="7e" title="Manual discounts on POS">
           <p className="text-ink-dark">
             On <Code>/instore/pos</Code>, click <strong>+ Add discount</strong>{' '}
@@ -350,6 +374,7 @@ export default async function HelpPage() {
               ['/admin/menu', 'Menu items + add-ons (CRUD)', 'admin'],
               ['/admin/users', 'Staff accounts', 'admin'],
               ['/admin/brand', 'Theme + brand switcher', 'admin'],
+              ['/admin/audit', 'Audit log of admin actions', 'admin'],
               ['/help', 'This guide', 'required'],
             ]}
           />
@@ -381,6 +406,8 @@ function Toc() {
     ['reports', '7c. Reports'],
     ['loyaltyAdmin', '7d. Loyalty admin'],
     ['discounts', '7e. Manual discounts'],
+    ['audit', '7f. Audit log'],
+    ['realtime', '7g. Real-time + PWA'],
     ['users', '8. Users & roles'],
     ['payments', '9. Payments'],
     ['troubleshoot', '10. Troubleshooting'],

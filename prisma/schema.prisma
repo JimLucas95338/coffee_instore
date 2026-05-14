@@ -1285,3 +1285,22 @@ model AppSetting {
 
   @@map("app_settings")
 }
+
+// One row per consequential admin action — refunds, menu changes, role
+// changes, comps, loyalty adjusts. Stored as a free-form action string plus
+// JSON metadata so we can add new event types without migrations.
+model AuditLog {
+  id          String   @id @default(cuid())
+  action      String   // e.g. ORDER_REFUNDED, MENU_ITEM_HIDDEN, USER_ROLE_CHANGED
+  actorId     String?  // user id of who did it; null for system actions
+  actorEmail  String?  // denormalized for legibility if user is later deleted
+  targetType  String?  // e.g. InStoreOrder, MenuItem, User, MenuAddOn, LoyaltyMember
+  targetId    String?
+  metadata    String?  // JSON blob of context (amounts, before/after, reason)
+  createdAt   DateTime @default(now())
+
+  @@index([action])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

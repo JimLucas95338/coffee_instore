@@ -76,53 +76,84 @@ export default function QueueBoard({ embedded = false }: QueueBoardProps) {
   const isFirstFetchRef = useRef(true);
   const time = useCurrentTime();
 
+  const applyOrders = useCallback((orders: QueueOrder[]) => {
+    setError(false);
+
+    const nextReceived = orders
+      .filter((o) => o.status === 'RECEIVED')
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+    const nextInProgress = orders
+      .filter((o) => o.status === 'IN_PROGRESS')
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+    const nextReady = orders
+      .filter((o) => o.status === 'READY')
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    const nextReadyIds = new Set(nextReady.map((o) => o.id));
+    if (!isFirstFetchRef.current) {
+      const prevIds = prevReadyIdsRef.current;
+      const hasNewReady = nextReady.some((o) => !prevIds.has(o.id));
+      if (hasNewReady) playChime();
+    }
+    isFirstFetchRef.current = false;
+    prevReadyIdsRef.current = nextReadyIds;
+
+    setReceived(nextReceived);
+    setInProgress(nextInProgress);
+    setReady(nextReady);
+
+    const allIds = new Set(orders.map((o) => o.id));
+    setVisible(allIds);
+  }, []);
+
   const fetchOrders = useCallback(async () => {
     try {
       const res = await fetch('/api/instore/orders?status=RECEIVED,IN_PROGRESS,READY');
       if (!res.ok) throw new Error('fetch failed');
-
-      const orders: QueueOrder[] = await res.json();
-      setError(false);
-
-      const nextReceived = orders
-        .filter((o) => o.status === 'RECEIVED')
-        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-
-      const nextInProgress = orders
-        .filter((o) => o.status === 'IN_PROGRESS')
-        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-
-      const nextReady = orders
-        .filter((o) => o.status === 'READY')
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-      const nextReadyIds = new Set(nextReady.map((o) => o.id));
-      if (!isFirstFetchRef.current) {
-        const prevIds = prevReadyIdsRef.current;
-        const hasNewReady = nextReady.some((o) => !prevIds.has(o.id));
-        if (hasNewReady) {
-          playChime();
-        }
-      }
-      isFirstFetchRef.current = false;
-      prevReadyIdsRef.current = nextReadyIds;
-
-      setReceived(nextReceived);
-      setInProgress(nextInProgress);
-      setReady(nextReady);
-
-      const allIds = new Set(orders.map((o) => o.id));
-      setVisible(allIds);
+      applyOrders(await res.json());
     } catch {
       setError(true);
     }
-  }, []);
+  }, [applyOrders]);
 
+  // Prefer SSE; fall back to polling if the stream gives up.
   useEffect(() => {
-    fetchOrders();
-    const interval = setInterval(fetchOrders, POLL_INTERVAL);
-    return () => clearInterval(interval);
-  }, [fetchOrders]);
+    let es: EventSource | null = null;
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
+    let fellBack = false;
+
+    function startPolling() {
+      fellBack = true;
+      fetchOrders();
+      pollInterval = setInterval(fetchOrders, POLL_INTERVAL);
+    }
+
+    try {
+      es = new EventSource('/api/instore/orders/stream?status=RECEIVED,IN_PROGRESS,READY');
+      es.addEventListener('orders', (event) => {
+        try {
+          applyOrders(JSON.parse((event as MessageEvent).data));
+        } catch {
+          // ignore malformed payloads
+        }
+      });
+      es.addEventListener('error', () => {
+        if (es && es.readyState === EventSource.CLOSED && !fellBack) {
+          es.close();
+          startPolling();
+        }
+      });
+    } catch {
+      startPolling();
+    }
+
+    return () => {
+      es?.close();
+      if (pollInterval) clearInterval(pollInterval);
+    };
+  }, [fetchOrders, applyOrders]);
 
   const formatTime = (d: Date) =>
     d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });

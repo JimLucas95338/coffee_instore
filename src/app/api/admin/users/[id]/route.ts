@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { authOptions, isAdmin } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { audit } from '@/lib/audit';
 
 const ROLES = ['ADMIN', 'MANAGER', 'SALES_REP', 'ROASTER', 'PACKAGER'] as const;
 
@@ -66,6 +67,46 @@ export async function PATCH(
       },
     });
 
+    // Emit a focused event per kind of change so audit search stays useful.
+    const events: Promise<void>[] = [];
+    if (data.role && data.role !== target.role) {
+      events.push(
+        audit({
+          action: 'USER_ROLE_CHANGED',
+          actorId: session.user.id,
+          actorEmail: session.user.email,
+          targetType: 'User',
+          targetId: params.id,
+          metadata: { from: target.role, to: data.role, email: target.email },
+        }),
+      );
+    }
+    if (data.isActive !== undefined && data.isActive !== target.isActive) {
+      events.push(
+        audit({
+          action: data.isActive ? 'USER_ACTIVATED' : 'USER_DEACTIVATED',
+          actorId: session.user.id,
+          actorEmail: session.user.email,
+          targetType: 'User',
+          targetId: params.id,
+          metadata: { email: target.email },
+        }),
+      );
+    }
+    if (data.password) {
+      events.push(
+        audit({
+          action: 'USER_PASSWORD_RESET',
+          actorId: session.user.id,
+          actorEmail: session.user.email,
+          targetType: 'User',
+          targetId: params.id,
+          metadata: { email: target.email },
+        }),
+      );
+    }
+    await Promise.all(events);
+
     return NextResponse.json({ user });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -92,10 +133,26 @@ export async function DELETE(
     );
   }
 
+  const target = await db.user.findUnique({
+    where: { id: params.id },
+    select: { email: true, isActive: true },
+  });
+
   await db.user.update({
     where: { id: params.id },
     data: { isActive: false },
   });
+
+  if (target?.isActive) {
+    await audit({
+      action: 'USER_DEACTIVATED',
+      actorId: session.user.id,
+      actorEmail: session.user.email,
+      targetType: 'User',
+      targetId: params.id,
+      metadata: { email: target.email ?? null },
+    });
+  }
 
   return NextResponse.json({ success: true });
 }

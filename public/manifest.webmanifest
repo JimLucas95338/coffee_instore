@@ -1,0 +1,58 @@
+{
+  "name": "3rd Space Coffee — In Store",
+  "short_name": "3rd Space",
+  "description": "In-store ordering: kiosk, POS, customer display, and queue.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#05071a",
+  "theme_color": "#0a0e27",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mission Control",
+      "url": "/instore/home",
+      "description": "Staff hub"
+    },
+    {
+      "name": "Kiosk",
+      "url": "/instore/kiosk",
+      "description": "Customer ordering"
+    },
+    {
+      "name": "POS",
+      "url": "/instore/pos",
+      "description": "Staff POS"
+    },
+    {
+      "name": "Bar Station",
+      "url": "/instore/bar",
+      "description": "Barista station"
+    },
+    {
+      "name": "Display",
+      "url": "/instore/display",
+      "description": "Customer-facing menu + queue"
+    }
+  ]
+}

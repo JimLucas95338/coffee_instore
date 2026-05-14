@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { authOptions, isAdmin } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { audit } from '@/lib/audit';
 
 const ROLES = ['ADMIN', 'MANAGER', 'SALES_REP', 'ROASTER', 'PACKAGER'] as const;
 
@@ -71,6 +72,15 @@ export async function POST(request: NextRequest) {
         isActive: true,
         createdAt: true,
       },
+    });
+
+    await audit({
+      action: 'USER_CREATED',
+      actorId: session.user.id,
+      actorEmail: session.user.email,
+      targetType: 'User',
+      targetId: user.id,
+      metadata: { email: user.email, role: user.role },
     });
 
     return NextResponse.json({ user }, { status: 201 });

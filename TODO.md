@@ -42,13 +42,14 @@ What to add:
 
 - `/instore/menu` redirect → `/instore/display` for backwards-compat
   with old bookmarks
+- **Modifier groups** (required vs optional, min/max selections) —
+  current add-ons are all flat/optional
 - **Partial refunds** (today's refunds are full-order only)
 - **Image upload** for menu items (currently a URL field; want
   paste-from-clipboard or drag-drop into Vercel Blob)
 - **Employee time tracking** + per-employee sales attribution (schema
   already has `employeeId` on orders, POS doesn't capture it)
-- **Real-time updates** via SSE/WebSockets — Bar Station + Display
-  poll every 4 seconds today
 - **Customer email receipts** from the kiosk confirmation screen
-- **Search** in admin pages (menu items, orders, users)
-- **Audit log** of admin actions
+- **Offline order queue** — service worker is in place but cash/card
+  orders still need network to land; queue them and replay
+- **2FA + login rate limit**

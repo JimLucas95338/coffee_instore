@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { z } from 'zod';
 import { authOptions, isManager } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { audit } from '@/lib/audit';
 
 const adjustSchema = z.object({
   /** Positive = grant, negative = revoke. */
@@ -55,6 +56,15 @@ export async function POST(
         },
       }),
     ]);
+
+    await audit({
+      action: 'LOYALTY_ADJUSTED',
+      actorId: session.user.id,
+      actorEmail: session.user.email,
+      targetType: 'LoyaltyMember',
+      targetId: id,
+      metadata: { delta, reason, previousPoints: member.points, newPoints: newBalance },
+    });
 
     return NextResponse.json({ member: updated });
   } catch (error) {

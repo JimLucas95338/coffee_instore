@@ -73,6 +73,19 @@ export default function OrdersClient() {
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [refundingId, setRefundingId] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+
+  const filteredOrders = orders.filter((o) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    if (String(o.displayNumber).includes(q)) return true;
+    if (o.orderNumber.toLowerCase().includes(q)) return true;
+    if (o.customerName?.toLowerCase().includes(q)) return true;
+    if (o.paymentMethod.toLowerCase().includes(q)) return true;
+    if (o.items.some((i) => i.menuItem.name.toLowerCase().includes(q))) return true;
+    if (o.refundReason?.toLowerCase().includes(q)) return true;
+    return false;
+  });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -147,30 +160,39 @@ export default function OrdersClient() {
         </span>
       </div>
 
-      <div className="mb-6 flex flex-wrap gap-3 items-end bg-surface-900/50 border border-surface-700 rounded-xl p-4">
-        <label className="block text-sm">
-          <span className="block text-xs text-ink-dark/60 mb-1">From</span>
-          <input
-            type="date"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-            className="rounded bg-surface-800 border border-surface-700 px-3 py-1.5 text-sm"
-          />
-        </label>
-        <label className="block text-sm">
-          <span className="block text-xs text-ink-dark/60 mb-1">To</span>
-          <input
-            type="date"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-            className="rounded bg-surface-800 border border-surface-700 px-3 py-1.5 text-sm"
-          />
-        </label>
-        <div className="ml-auto flex gap-6 text-sm">
-          <Stat label="Gross" value={`$${totals.gross.toFixed(2)}`} />
-          <Stat label="Refunded" value={`$${totals.refunded.toFixed(2)}`} negative />
-          <Stat label="Net" value={`$${totals.net.toFixed(2)}`} accent />
+      <div className="mb-4 bg-surface-900/50 border border-surface-700 rounded-xl p-4 space-y-3">
+        <div className="flex flex-wrap gap-3 items-end">
+          <label className="block text-sm">
+            <span className="block text-xs text-ink-dark/60 mb-1">From</span>
+            <input
+              type="date"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              className="rounded bg-surface-800 border border-surface-700 px-3 py-1.5 text-sm"
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="block text-xs text-ink-dark/60 mb-1">To</span>
+            <input
+              type="date"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              className="rounded bg-surface-800 border border-surface-700 px-3 py-1.5 text-sm"
+            />
+          </label>
+          <div className="ml-auto flex gap-6 text-sm">
+            <Stat label="Gross" value={`$${totals.gross.toFixed(2)}`} />
+            <Stat label="Refunded" value={`$${totals.refunded.toFixed(2)}`} negative />
+            <Stat label="Net" value={`$${totals.net.toFixed(2)}`} accent />
+          </div>
         </div>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by order #, customer, item, or refund reason"
+          className="w-full rounded bg-surface-800 border border-surface-700 px-3 py-2 text-sm"
+        />
       </div>
 
       {error && (
@@ -201,7 +223,7 @@ export default function OrdersClient() {
               </tr>
             </thead>
             <tbody>
-              {orders.map((o) => (
+              {filteredOrders.map((o) => (
                 <OrderRow
                   key={o.id}
                   order={o}

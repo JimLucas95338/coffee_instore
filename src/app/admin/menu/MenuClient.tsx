@@ -91,6 +91,7 @@ export default function MenuClient() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [showCreate, setShowCreate] = useState(false);
+  const [query, setQuery] = useState('');
 
   async function load() {
     setLoading(true);
@@ -176,9 +177,18 @@ export default function MenuClient() {
     setShowCreate(false);
   }
 
-  // Group by category
+  // Apply search filter then group by category
+  const q = query.trim().toLowerCase();
+  const filteredItems = q
+    ? items.filter(
+        (i) =>
+          i.name.toLowerCase().includes(q) ||
+          (i.description?.toLowerCase().includes(q) ?? false) ||
+          i.category.toLowerCase().includes(q),
+      )
+    : items;
   const grouped: Record<string, MenuItem[]> = {};
-  for (const item of items) {
+  for (const item of filteredItems) {
     if (!grouped[item.category]) grouped[item.category] = [];
     grouped[item.category].push(item);
   }
@@ -186,7 +196,7 @@ export default function MenuClient() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Menu</h1>
         <button
           onClick={() => {
@@ -198,6 +208,16 @@ export default function MenuClient() {
         >
           {showCreate ? 'Cancel' : '+ New item'}
         </button>
+      </div>
+
+      <div className="mb-6">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search menu items by name, description, or category"
+          className="w-full rounded bg-surface-800 border border-surface-700 px-3 py-2 text-sm"
+        />
       </div>
 
       {showCreate && (

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { z } from 'zod';
 import { authOptions, isManager } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { audit } from '@/lib/audit';
 
 const refundSchema = z.object({
   reason: z.string().min(1).max(500),
@@ -62,6 +63,15 @@ export async function POST(
         refundedById: session.user.id,
         refundReason: reason,
       },
+    });
+
+    await audit({
+      action: 'ORDER_REFUNDED',
+      actorId: session.user.id,
+      actorEmail: session.user.email,
+      targetType: 'InStoreOrder',
+      targetId: id,
+      metadata: { amount: refundAmount, reason, orderTotal: order.total },
     });
 
     return NextResponse.json({ success: true, order: updated });

@@ -240,6 +240,22 @@ This is what staff uses for "drink was cold, here's $2 off" or "first-time custo
 
 Presets: **Today**, **Last 7 days**, **Last 30 days**. Or pick any custom range.
 
+## 8.10. Audit log (admin)
+
+`/admin/audit` shows the 100 most recent consequential admin actions. Filter chips on top (Refunds / Theme changes / Menu hides / Menu updates / Menu deletes / User role changes / Loyalty adjusts) plus free-text search across actor email and metadata. Each row shows the action, who performed it, the target, and a JSON blob of context (amounts, before/after, reason).
+
+Audited today: order refunds, menu item create/update/hide/show/delete, user creation, role changes, deactivations, password resets, loyalty point adjustments, theme switches.
+
+## 8.11. Real-time order updates
+
+Bar Station, Queue, and Customer Display use Server-Sent Events to receive order changes — they no longer poll every 4 seconds. A new order, status change, or refund appears within 1–2 seconds across every connected device. If the SSE stream is blocked (rare; some captive Wi-Fi portals do this), each screen automatically falls back to the old 4-second polling.
+
+## 8.12. Installable PWA
+
+The whole app is a Progressive Web App. From iPad Safari, the Share menu has **Add to Home Screen**; from desktop Chrome, the address bar shows an install icon. Once installed, each iPad behaves like a standalone app (no browser chrome, faster cold start) and survives brief internet hiccups — the kiosk shell is cached so customers don't see a "no internet" page if the network blinks. Real orders still need the network to land in the database; offline order queueing is a future improvement.
+
+Manifest shortcuts: long-pressing the installed icon shows quick links to **Mission Control / Kiosk / POS / Bar Station / Display**.
+
 ## 9. Payments — current state
 
 > **Important:** the system does not actually process card payments today.
@@ -309,6 +325,7 @@ See `TODO.md` in the repo for the full list. Highlights:
 | `/admin/menu` | Menu items + add-ons (CRUD) | admin |
 | `/admin/users` | Staff accounts | admin |
 | `/admin/brand` | Theme + brand switcher | admin |
+| `/admin/audit` | Audit log of admin actions | admin |
 | `/help` | This guide | required |
 | `/login` | Sign-in screen | n/a |
 

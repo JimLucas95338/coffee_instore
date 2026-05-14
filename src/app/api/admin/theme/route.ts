@@ -5,6 +5,7 @@ import { authOptions, isAdmin } from '@/lib/auth';
 import { THEMES, getTheme } from '@/themes';
 import { setActiveTheme } from '@/lib/theme';
 import { db } from '@/lib/db';
+import { audit } from '@/lib/audit';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -51,9 +52,18 @@ export async function POST(request: NextRequest) {
     if (next.id !== themeId) {
       return NextResponse.json({ error: 'Unknown themeId' }, { status: 400 });
     }
+    const current = await db.appSetting.findUnique({ where: { id: 'singleton' } });
     await setActiveTheme(themeId);
     // Bust any cached layouts so the next request paints the new theme.
     revalidatePath('/', 'layout');
+    await audit({
+      action: 'THEME_CHANGED',
+      actorId: session.user.id,
+      actorEmail: session.user.email,
+      targetType: 'AppSetting',
+      targetId: 'singleton',
+      metadata: { from: current?.themeId ?? null, to: next.id },
+    });
     return NextResponse.json({ success: true, activeThemeId: next.id });
   } catch (error) {
     console.error('Error updating theme:', error);

@@ -21,6 +21,17 @@ export default function UsersClient({ currentUserId }: { currentUserId: string }
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [editingPwId, setEditingPwId] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+
+  const filteredUsers = users.filter((u) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      u.email.toLowerCase().includes(q) ||
+      (u.name?.toLowerCase().includes(q) ?? false) ||
+      u.role.toLowerCase().includes(q)
+    );
+  });
 
   async function load() {
     setLoading(true);
@@ -84,6 +95,16 @@ export default function UsersClient({ currentUserId }: { currentUserId: string }
         </button>
       </div>
 
+      <div className="mb-4">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search users by email, name, or role"
+          className="w-full rounded bg-surface-800 border border-surface-700 px-3 py-2 text-sm"
+        />
+      </div>
+
       {showCreate && (
         <CreateUserForm
           onCreated={(u) => {
@@ -115,7 +136,7 @@ export default function UsersClient({ currentUserId }: { currentUserId: string }
               </tr>
             </thead>
             <tbody>
-              {users.map((u) => {
+              {filteredUsers.map((u) => {
                 const isSelf = u.id === currentUserId;
                 return (
                   <tr key={u.id} className="border-t border-neutral-800">

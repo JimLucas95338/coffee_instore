@@ -49,6 +49,9 @@ export default async function AdminLayout({
               <Link href="/admin/brand" className="text-ink-dark/80 hover:text-accent-400 transition-colors">
                 Brand
               </Link>
+              <Link href="/admin/audit" className="text-ink-dark/80 hover:text-accent-400 transition-colors">
+                Audit
+              </Link>
               <Link href="/instore/home" className="text-ink-dark/80 hover:text-accent-400 transition-colors">
                 Hub
               </Link>

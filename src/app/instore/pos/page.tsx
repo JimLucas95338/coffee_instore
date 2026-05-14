@@ -402,6 +402,9 @@ export default function BaristaPosPage() {
   const [discountReason, setDiscountReason] = useState('');
   const [showDiscount, setShowDiscount] = useState(false);
 
+  // Cash tender modal
+  const [showCashModal, setShowCashModal] = useState(false);
+
   // Print settings
   const printerType = usePrintSettings((s) => s.printerType);
   const autoPrint = usePrintSettings((s) => s.autoPrint);
@@ -580,7 +583,10 @@ export default function BaristaPosPage() {
   };
 
   // ---------- Submit order ----------
-  const submitOrder = async (paymentMethod: 'CASH' | 'CARD') => {
+  const submitOrder = async (
+    paymentMethod: 'CASH' | 'CARD',
+    opts?: { cashTendered?: number },
+  ) => {
     if (items.length === 0) return;
     if (discountType && discountValue && !discountReason.trim()) {
       alert('Please add a reason for the discount before submitting.');
@@ -595,6 +601,7 @@ export default function BaristaPosPage() {
         source: 'POS' as const,
         loyaltyPhone: loyaltyPhone.replace(/\D/g, '').length >= 10 ? loyaltyPhone : undefined,
         redeemPoints: redeemPoints || undefined,
+        cashTendered: opts?.cashTendered,
         manualDiscount:
           manualDiscountAmount > 0 && discountType
             ? {
@@ -1209,7 +1216,7 @@ export default function BaristaPosPage() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 disabled={items.length === 0 || submitting}
-                onClick={() => submitOrder('CASH')}
+                onClick={() => setShowCashModal(true)}
                 className="flex min-h-[52px] items-center justify-center rounded-xl bg-amber-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-amber-500 active:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {submitting ? (
@@ -1311,6 +1318,19 @@ export default function BaristaPosPage() {
         </div>
       </div>
 
+      {/* ---- Cash tender modal ---- */}
+      {showCashModal && (
+        <CashTenderModal
+          total={total}
+          submitting={submitting}
+          onClose={() => setShowCashModal(false)}
+          onConfirm={async (tendered) => {
+            setShowCashModal(false);
+            await submitOrder('CASH', { cashTendered: tendered });
+          }}
+        />
+      )}
+
       {/* ---- Customize modal ---- */}
       {customizeItem && (
         <CustomizeModal
@@ -1386,6 +1406,128 @@ export default function BaristaPosPage() {
           {loyaltyToast}
         </div>
       )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Cash Tender Modal — mimics real-POS cash collection flow
+// ---------------------------------------------------------------------------
+
+function CashTenderModal({
+  total,
+  submitting,
+  onConfirm,
+  onClose,
+}: {
+  total: number;
+  submitting: boolean;
+  onConfirm: (tendered: number) => Promise<void> | void;
+  onClose: () => void;
+}) {
+  const [raw, setRaw] = useState<string>('');
+  const tendered = raw === '' ? 0 : parseFloat(raw);
+  const valid = !Number.isNaN(tendered) && tendered >= total;
+  const change = valid ? Math.max(0, Math.round((tendered - total) * 100) / 100) : 0;
+
+  // Quick-tender suggestions: exact total + the next $5 / $10 / $20 / $50
+  const exact = Math.ceil(total * 100) / 100;
+  const next5 = Math.ceil(total / 5) * 5;
+  const next10 = Math.ceil(total / 10) * 10;
+  const next20 = Math.ceil(total / 20) * 20;
+  const quickAmounts = Array.from(
+    new Set([exact, next5, next10, next20, 50, 100].filter((v) => v >= exact)),
+  ).slice(0, 6);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl bg-neutral-900 p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-4">
+          <h2 className="text-xl font-bold text-white">Cash Payment</h2>
+          <p className="mt-1 text-sm text-neutral-400">
+            Total due: <span className="font-bold text-white">${total.toFixed(2)}</span>
+          </p>
+        </div>
+
+        <label className="block text-sm">
+          <span className="block text-xs uppercase tracking-wider text-neutral-500 mb-1">
+            Amount tendered
+          </span>
+          <div className="relative">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-neutral-500">
+              $
+            </span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              autoFocus
+              inputMode="decimal"
+              value={raw}
+              onChange={(e) => setRaw(e.target.value)}
+              placeholder="0.00"
+              className="w-full rounded-lg bg-neutral-800 border border-neutral-700 pl-7 pr-3 py-3 text-2xl font-bold text-white outline-none focus:border-amber-500"
+            />
+          </div>
+        </label>
+
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {quickAmounts.map((amt) => (
+            <button
+              key={amt}
+              onClick={() => setRaw(amt.toFixed(2))}
+              className="rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 text-sm font-semibold text-neutral-200 hover:border-amber-500 hover:bg-amber-500/10"
+            >
+              {amt === exact ? 'Exact' : `$${amt}`}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-5 rounded-xl border border-neutral-800 bg-neutral-950/60 p-4">
+          <div className="flex justify-between text-sm text-neutral-400">
+            <span>Tendered</span>
+            <span>${valid ? tendered.toFixed(2) : '—'}</span>
+          </div>
+          <div className="flex justify-between text-sm text-neutral-400">
+            <span>Total</span>
+            <span>${total.toFixed(2)}</span>
+          </div>
+          <div className="mt-2 flex justify-between border-t border-neutral-800 pt-2 text-lg font-bold">
+            <span className="text-white">Change due</span>
+            <span className={valid ? 'text-emerald-400' : 'text-neutral-600'}>
+              ${valid ? change.toFixed(2) : '0.00'}
+            </span>
+          </div>
+        </div>
+
+        {!valid && raw !== '' && (
+          <p className="mt-3 rounded-lg bg-red-900/30 border border-red-900 px-3 py-2 text-xs text-red-300">
+            Tendered amount must be at least ${total.toFixed(2)}.
+          </p>
+        )}
+
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <button
+            onClick={onClose}
+            className="rounded-xl bg-neutral-800 px-4 py-3 text-sm font-semibold text-neutral-200 hover:bg-neutral-700"
+          >
+            Cancel
+          </button>
+          <button
+            disabled={!valid || submitting}
+            onClick={() => onConfirm(tendered)}
+            className="rounded-xl bg-amber-500 px-4 py-3 text-sm font-bold text-amber-950 hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {submitting ? 'Processing…' : `Confirm · $${change.toFixed(2)} change`}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1236,6 +1236,9 @@ model InStoreOrder {
   loyaltyPointsEarned   Int?
   loyaltyPointsRedeemed Int?
   loyaltyDiscount       Float?
+  // Cash payment details — captured at POS to mimic real cash drawer flow.
+  cashTendered          Float?
+  cashChange            Float?
   // Manual discount applied at POS (manager comp, customer service).
   manualDiscount        Float?
   manualDiscountReason  String?

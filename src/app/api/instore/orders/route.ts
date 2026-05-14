@@ -36,6 +36,9 @@ const createOrderSchema = z.object({
       reason: z.string().min(1).max(200),
     })
     .optional(),
+  // For CASH orders: amount the customer handed over. Used to compute change
+  // and mark the order PAID at creation, matching how real POS systems work.
+  cashTendered: z.number().nonnegative().optional(),
 });
 
 // GET: List today's orders, filterable by status
@@ -175,10 +178,19 @@ export async function POST(request: NextRequest) {
 
     // TODO(stripe): when Stripe Terminal is wired up, drop the auto-PAID for
     // CARD/APPLE_PAY and let the payment_intent.succeeded webhook flip status.
-    // For now: card-type payments mark PAID immediately (honor-system),
-    // CASH stays PENDING until staff confirms collection.
+    // For now:
+    // - CARD/APPLE_PAY: created PAID (honor-system, swiped externally).
+    // - CASH with cashTendered: created PAID with computed change (real-POS
+    //   flow). Caller is expected to send tendered ≥ total.
+    // - CASH without cashTendered: stays PENDING for legacy callers that
+    //   don't capture cash at the counter.
+    const cashCaptured =
+      data.paymentMethod === 'CASH' && typeof data.cashTendered === 'number';
+    const cashChange = cashCaptured
+      ? Math.max(0, Math.round((data.cashTendered! - total) * 100) / 100)
+      : null;
     const initialPaymentStatus =
-      data.paymentMethod === 'CASH' ? 'PENDING' : 'PAID';
+      data.paymentMethod !== 'CASH' || cashCaptured ? 'PAID' : 'PENDING';
     const initialPaidAt = initialPaymentStatus === 'PAID' ? new Date() : null;
 
     const order = await db.inStoreOrder.create({
@@ -192,6 +204,8 @@ export async function POST(request: NextRequest) {
         paymentMethod: data.paymentMethod,
         paymentStatus: initialPaymentStatus,
         paidAt: initialPaidAt,
+        cashTendered: cashCaptured ? data.cashTendered : null,
+        cashChange,
         source: data.source,
         employeeId: data.employeeId || null,
         loyaltyPhone: normalizedPhone || null,

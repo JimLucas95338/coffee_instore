@@ -30,6 +30,8 @@ export interface ReceiptData {
   total: number;
   paymentMethod: string;
   paymentStatus: string;
+  cashTendered?: number | null;
+  cashChange?: number | null;
   brand?: ReceiptBrand;
   source: string;
   createdAt: Date;
@@ -177,6 +179,21 @@ export function generateReceiptThermal(data: ReceiptData): Buffer {
   const payMethod = data.paymentMethod === 'CASH' ? 'Cash' : 'Card';
   const payStatus = data.paymentStatus === 'PAID' ? 'PAID' : 'PENDING';
   doc.text(`${payMethod} - ${payStatus}`, cx, y, { align: 'center' });
+  y += 4;
+
+  if (data.paymentMethod === 'CASH' && data.cashTendered != null) {
+    doc.setFontSize(8);
+    doc.text('Tendered', 4, y);
+    doc.text(`$${data.cashTendered.toFixed(2)}`, WIDTH - 4, y, { align: 'right' });
+    y += 4;
+    if (data.cashChange != null) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Change', 4, y);
+      doc.text(`$${data.cashChange.toFixed(2)}`, WIDTH - 4, y, { align: 'right' });
+      doc.setFont('helvetica', 'normal');
+      y += 4;
+    }
+  }
   y += 4;
 
   // Loyalty points

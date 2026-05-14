@@ -61,6 +61,8 @@ export async function GET(
       total: order.total,
       paymentMethod: order.paymentMethod,
       paymentStatus: order.paymentStatus,
+      cashTendered: order.cashTendered,
+      cashChange: order.cashChange,
       source: order.source,
       createdAt: order.createdAt,
       brand: {

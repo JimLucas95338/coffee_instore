@@ -299,12 +299,17 @@ export default async function HelpPage() {
           <Table
             headers={['Method', 'What happens on submit']}
             rows={[
-              ['Cash', 'Order created PENDING. Staff confirms cash separately.'],
-              ['Card / Apple Pay', 'Auto-marked PAID on the honor system.'],
+              [
+                'Cash',
+                'Opens tender modal; cashier enters amount handed over, system computes change, order created PAID.',
+              ],
+              ['Card / Apple Pay', 'Auto-marked PAID on the honor system (Stripe TODO).'],
             ]}
           />
           <p className="text-ink-dark mt-3">
             Real Stripe Terminal integration is on the roadmap — see <Code>TODO.md</Code>.
+            The cash flow now matches real-POS behavior (Square / Toast /
+            Clover); only card processing is honor-system.
           </p>
         </Section>
 

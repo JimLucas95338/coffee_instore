@@ -42,8 +42,8 @@ What to add:
 
 - `/instore/menu` redirect → `/instore/display` for backwards-compat
   with old bookmarks
-- **Modifier groups** (required vs optional, min/max selections) —
-  current add-ons are all flat/optional
+- Migrate built-in **size / milk / temperature** to modifier groups
+  (today those stay as enums; modifier groups are additive)
 - **Partial refunds** (today's refunds are full-order only)
 - **Image upload** for menu items (currently a URL field; want
   paste-from-clipboard or drag-drop into Vercel Blob)

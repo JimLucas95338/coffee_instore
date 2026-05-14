@@ -122,9 +122,24 @@ To edit an existing item, click **Edit** on its row, change fields, **Save**.
 - **Delete**: permanent. If the item has any historical orders, the system blocks the delete and tells you to hide instead.
 
 ### Add-on availability
-On `/admin/menu`, the **Add-ons** section shows every modifier (extra shot, syrups, oat milk upgrade, etc.) as a tile. Click a tile to flip **Available ↔ Hidden**. Hidden add-ons don't appear in the customize step on kiosk or POS.
+On `/admin/menu`, the **Add-ons** section shows every modifier (extra shot, syrups, oat milk upgrade, etc.) as a tile. Click a tile to flip **Available ↔ Hidden**. Hidden add-ons disappear from the customize step on kiosk and POS immediately.
 
-> Add-on **create / edit / delete** is not yet built — only the availability toggle. Tell an admin if you need a new add-on added; they can do it directly in the database for now.
+### Modifier groups vs. add-ons
+
+Two systems work together:
+
+- **Modifier groups** are *per-item* structured choices with constraints. Define a group ("Milk", "Syrups", "Espresso shots"), set **required**, **min**, and **max**, add options inside it (each with a price delta), then attach the group to specific menu items.
+- **Add-ons** are simple, *global*, all-optional extras. They show up wherever they're attached.
+
+Rule of thumb: if a customer can pick "any number, no limit" → add-on. If you need "exactly 1" or "at most 3" → modifier group.
+
+To create a group:
+1. `/admin/menu` → **Modifier groups** → **+ New group**.
+2. Set Required, min, max.
+3. Add options inside the group (name + price delta).
+4. Toggle which menu items use the group.
+
+Required groups block the kiosk/POS Add-to-Cart until the min selection is met. Picked modifiers print on receipts and cup labels alongside add-ons.
 
 ---
 

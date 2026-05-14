@@ -169,6 +169,26 @@ export default async function HelpPage() {
             Click to flip Available ↔ Hidden. Hidden add-ons disappear from the customize step
             on kiosk and POS immediately.
           </p>
+
+          <h3 className="font-display text-lg font-semibold text-accent-400 mt-6 mb-2">
+            Modifier groups
+          </h3>
+          <p className="text-ink-dark mb-2">
+            Use these for structured per-item choices: &quot;Milk choice
+            (required, pick 1)&quot;, &quot;Syrups (optional, max 3)&quot;,
+            &quot;Espresso shots (optional, max 2)&quot;.
+          </p>
+          <ol className="list-decimal pl-6 space-y-1 text-ink-dark text-sm">
+            <li>Create the group on <Code>/admin/menu</Code> → Modifier groups → + New group.</li>
+            <li>Set <strong>Required</strong>, <strong>min</strong>, <strong>max</strong>.</li>
+            <li>Add options inside the group (name, price delta).</li>
+            <li>Attach the group to the menu items it applies to.</li>
+          </ol>
+          <p className="text-ink-dark mt-2 text-sm">
+            Required groups block kiosk/POS submission until the min is met.
+            Selected modifiers print on receipts and cup labels alongside
+            regular add-ons.
+          </p>
         </Section>
 
         <Section id="receipts" number="6" title="Receipts and cup labels">

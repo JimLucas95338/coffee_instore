@@ -216,8 +216,10 @@ export default async function HelpPage() {
             at the same spot when payments are wired up.
           </p>
           <p className="text-ink-dark">
-            For cash collected at the bar, the Bar Station card now shows{' '}
-            <strong>💵 Mark Paid</strong> for any order still <Code>PENDING</Code>.
+            For cash collected at the counter, the cashier hits{' '}
+            <strong>💵 Mark Paid</strong> on the order&apos;s POS queue card.
+            Unpaid orders are ringed in amber on the POS queue so they
+            can&apos;t be missed.
           </p>
         </Section>
 

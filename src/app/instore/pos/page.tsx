@@ -42,6 +42,8 @@ interface QueueOrder {
   customerName: string | null;
   status: OrderStatus;
   total: number;
+  paymentMethod: string;
+  paymentStatus: string;
   createdAt: string;
   items: {
     id: string;
@@ -664,6 +666,34 @@ export default function BaristaPosPage() {
     }
   };
 
+  // ---------- Mark cash order as paid ----------
+  const markPaid = async (order: QueueOrder) => {
+    if (
+      !confirm(
+        `Mark order #${order.displayNumber} as PAID? Confirms cash collected.`,
+      )
+    ) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/instore/orders/${order.id}/pay`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        setQueue((prev) =>
+          prev.map((o) =>
+            o.id === order.id ? { ...o, paymentStatus: 'PAID' } : o,
+          ),
+        );
+      } else {
+        const e = await res.json().catch(() => ({}));
+        alert(e.error || 'Failed');
+      }
+    } catch {
+      alert('Failed to mark paid');
+    }
+  };
+
   // ---------- Advance status ----------
   const advanceStatus = async (order: QueueOrder) => {
     const next = NEXT_STATUS[order.status];
@@ -1213,49 +1243,71 @@ export default function BaristaPosPage() {
           {queue.length === 0 && (
             <span className="text-xs text-neutral-600">No active orders</span>
           )}
-          {queue.map((order) => (
-            <div key={order.id} className="flex shrink-0 items-center gap-1">
-              <button
-                onClick={() => advanceStatus(order)}
-                className={`flex min-h-[48px] items-center gap-2 rounded-l-xl px-4 py-2 transition-colors ${
-                  STATUS_COLORS[order.status]
-                } hover:brightness-110 active:brightness-90`}
-                title={`Tap to advance status`}
+          {queue.map((order) => {
+            const isUnpaid = order.paymentStatus === 'PENDING';
+            return (
+              <div
+                key={order.id}
+                className={`flex shrink-0 items-center gap-1 ${
+                  isUnpaid ? 'rounded-xl ring-2 ring-amber-500/60' : ''
+                }`}
               >
-                <span className="text-sm font-bold">#{order.displayNumber}</span>
-                <span className="text-xs opacity-80">
-                  {order.customerName || 'Guest'}
-                </span>
-                <span className="rounded-md bg-black/20 px-2 py-0.5 text-[10px] font-semibold uppercase">
-                  {STATUS_LABELS[order.status]}
-                </span>
-              </button>
-              {printerType !== 'none' && (
+                {isUnpaid && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      markPaid(order);
+                    }}
+                    className="flex min-h-[48px] items-center gap-1 rounded-l-xl bg-amber-500 px-3 py-2 text-sm font-bold text-amber-950 hover:bg-amber-400 active:bg-amber-600"
+                    title="Mark cash as collected"
+                  >
+                    💵 Mark Paid
+                  </button>
+                )}
+                <button
+                  onClick={() => advanceStatus(order)}
+                  className={`flex min-h-[48px] items-center gap-2 px-4 py-2 transition-colors ${
+                    STATUS_COLORS[order.status]
+                  } hover:brightness-110 active:brightness-90 ${
+                    isUnpaid ? '' : 'rounded-l-xl'
+                  }`}
+                  title={`Tap to advance status`}
+                >
+                  <span className="text-sm font-bold">#{order.displayNumber}</span>
+                  <span className="text-xs opacity-80">
+                    {order.customerName || 'Guest'}
+                  </span>
+                  <span className="rounded-md bg-black/20 px-2 py-0.5 text-[10px] font-semibold uppercase">
+                    {STATUS_LABELS[order.status]}
+                  </span>
+                </button>
+                {printerType !== 'none' && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      printCupLabel(order.id, printerType);
+                    }}
+                    className="flex min-h-[48px] items-center bg-neutral-700 px-3 py-2 text-neutral-300 hover:bg-neutral-600 hover:text-white transition-colors"
+                    title="Reprint label"
+                  >
+                    &#9113;
+                  </button>
+                )}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    printCupLabel(order.id, printerType);
+                    printReceipt(order.id);
                   }}
-                  className="flex min-h-[48px] items-center bg-neutral-700 px-3 py-2 text-neutral-300 hover:bg-neutral-600 hover:text-white transition-colors"
-                  title="Reprint label"
+                  className={`flex min-h-[48px] items-center rounded-r-xl bg-neutral-700 px-3 py-2 text-neutral-300 hover:bg-neutral-600 hover:text-white transition-colors ${
+                    printerType === 'none' ? '' : 'border-l border-neutral-600'
+                  }`}
+                  title="Print receipt"
                 >
-                  &#9113;
+                  R
                 </button>
-              )}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  printReceipt(order.id);
-                }}
-                className={`flex min-h-[48px] items-center rounded-r-xl bg-neutral-700 px-3 py-2 text-neutral-300 hover:bg-neutral-600 hover:text-white transition-colors ${
-                  printerType === 'none' ? '' : 'border-l border-neutral-600'
-                }`}
-                title="Print receipt"
-              >
-                R
-              </button>
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       </div>
 

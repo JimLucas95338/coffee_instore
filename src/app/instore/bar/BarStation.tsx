@@ -183,30 +183,6 @@ export default function BarStation() {
   }, [orders]);
 
   // ---- Actions ----
-  async function markPaid(order: Order) {
-    if (
-      !confirm(
-        `Mark order #${order.displayNumber} as PAID? Confirms cash collected.`,
-      )
-    ) {
-      return;
-    }
-    setBusyId(order.id);
-    try {
-      const res = await fetch(`/api/instore/orders/${order.id}/pay`, {
-        method: 'POST',
-      });
-      if (!res.ok) {
-        const e = await res.json().catch(() => ({}));
-        alert(e.error || 'Failed');
-        return;
-      }
-      await fetchActive();
-    } finally {
-      setBusyId(null);
-    }
-  }
-
   async function advance(order: Order, next: OrderStatus) {
     setBusyId(order.id);
     try {
@@ -342,7 +318,6 @@ export default function BarStation() {
                 onAdvance={advance}
                 onCancel={cancel}
                 onReprint={reprint}
-                onMarkPaid={markPaid}
                 inProgressLabel={theme.status.IN_PROGRESS}
                 readyLabel={theme.status.READY}
               />
@@ -365,7 +340,6 @@ function OrderCard({
   onAdvance,
   onCancel,
   onReprint,
-  onMarkPaid,
   inProgressLabel,
   readyLabel,
 }: {
@@ -375,7 +349,6 @@ function OrderCard({
   onAdvance: (o: Order, next: OrderStatus) => void;
   onCancel: (o: Order) => void;
   onReprint: (o: Order) => void;
-  onMarkPaid: (o: Order) => void;
   inProgressLabel: string;
   readyLabel: string;
 }) {
@@ -501,15 +474,6 @@ function OrderCard({
           >
             🖨 Label
           </button>
-          {order.paymentStatus === 'PENDING' && (
-            <button
-              onClick={() => onMarkPaid(order)}
-              disabled={busy}
-              className="rounded-lg border border-amber-700/50 bg-amber-900/30 hover:bg-amber-800/40 px-3 py-2 text-sm font-semibold text-amber-200 disabled:opacity-50"
-            >
-              💵 Mark Paid
-            </button>
-          )}
         </div>
         <button
           onClick={() => onCancel(order)}

@@ -208,7 +208,7 @@ Adding a third theme requires a code change — drop a new file under `src/theme
 
 The order stays in history but is flagged **Refunded** and excluded from net sales. Today's payment integration is honor-system, so the refund is a bookkeeping action — when Stripe Terminal is wired up, this is the spot that calls the Stripe refund API.
 
-**Mark Paid** (Bar Station): cash orders sit `PENDING` until someone hits the **💵 Mark Paid** button on the Bar Station card. That call flips `paymentStatus` to `PAID` and stamps `paidAt`. Cards are still auto-marked PAID on submit (see §9).
+**Mark Paid** (POS): cash orders sit `PENDING` until the cashier hits the **💵 Mark Paid** button on the order's queue card at the bottom of `/instore/pos`. Unpaid orders are ringed in amber so they're impossible to miss. That call flips `paymentStatus` to `PAID` and stamps `paidAt`. Cards are still auto-marked PAID on submit (see §9).
 
 ## 8.8. Loyalty admin (manager/admin)
 
@@ -247,7 +247,7 @@ Presets: **Today**, **Last 7 days**, **Last 30 days**. Or pick any custom range.
 | **Cash** | Order created with status `PENDING`. Staff confirms cash collected, then a future "Mark Paid" button (not built yet) will flip it to `PAID`. For now the daily summary shows it as cash. |
 | **Card / Apple Pay** | Order is auto-marked `PAID` immediately on the honor system. **Run the customer's card on a separate device first.** |
 
-For cash orders that need to flip from `PENDING` to `PAID`, use the **💵 Mark Paid** button on the order's Bar Station card after collecting the cash. For any order that needs to be reversed, use **Refund** on `/admin/orders` (manager+).
+For cash orders that need to flip from `PENDING` to `PAID`, the cashier uses the **💵 Mark Paid** button on the order's POS queue card after collecting the cash. For any order that needs to be reversed, use **Refund** on `/admin/orders` (manager+).
 
 Real Stripe Terminal integration is on the roadmap — see `TODO.md` in the repo.
 

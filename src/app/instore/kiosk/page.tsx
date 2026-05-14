@@ -21,6 +21,21 @@ interface MenuAddOn {
   category: string;
 }
 
+interface Modifier {
+  id: string;
+  name: string;
+  priceDelta: number;
+}
+
+interface ModifierGroup {
+  id: string;
+  name: string;
+  required: boolean;
+  minSelections: number;
+  maxSelections: number;
+  modifiers: Modifier[];
+}
+
 interface MenuItem {
   id: string;
   name: string;
@@ -35,6 +50,7 @@ interface MenuItem {
   allowTemp: boolean;
   available: boolean;
   addOns: MenuAddOn[];
+  modifierGroups: ModifierGroup[];
 }
 
 interface PlacedOrder {
@@ -201,6 +217,9 @@ export default function KioskPage() {
   const tax = calculateTax(subtotal);
   const total = Math.round((subtotal + tax) * 100) / 100;
 
+  // Modifier group selections keyed by groupId → set of modifierIds.
+  const [customModifiers, setCustomModifiers] = useState<Record<string, Set<string>>>({});
+
   // --- Customize helpers ---
   function openCustomize(item: MenuItem) {
     setSelectedItem(item);
@@ -209,7 +228,61 @@ export default function KioskPage() {
     setCustomTemp('HOT');
     setCustomAddOns(new Set());
     setCustomNotes('');
+    // Default-select the first modifier in any required group so they're not
+    // accidentally empty — the user can swap.
+    const initial: Record<string, Set<string>> = {};
+    for (const g of item.modifierGroups ?? []) {
+      if (g.required && g.modifiers.length > 0) {
+        initial[g.id] = new Set([g.modifiers[0].id]);
+      } else {
+        initial[g.id] = new Set();
+      }
+    }
+    setCustomModifiers(initial);
     goTo('customize');
+  }
+
+  function toggleModifier(group: ModifierGroup, modifierId: string) {
+    setCustomModifiers((prev) => {
+      const current = new Set(prev[group.id] ?? []);
+      if (group.maxSelections === 1) {
+        // Radio behavior — selecting replaces.
+        if (current.has(modifierId)) {
+          if (!group.required) current.delete(modifierId);
+        } else {
+          current.clear();
+          current.add(modifierId);
+        }
+      } else {
+        if (current.has(modifierId)) {
+          current.delete(modifierId);
+        } else if (current.size < group.maxSelections) {
+          current.add(modifierId);
+        } else {
+          // Already at max; ignore.
+        }
+      }
+      return { ...prev, [group.id]: current };
+    });
+  }
+
+  function collectModifierAddOns(): InStoreAddOn[] {
+    if (!selectedItem) return [];
+    const out: InStoreAddOn[] = [];
+    for (const group of selectedItem.modifierGroups ?? []) {
+      const picked = customModifiers[group.id];
+      if (!picked) continue;
+      for (const modifier of group.modifiers) {
+        if (picked.has(modifier.id)) {
+          out.push({
+            addOnId: modifier.id,
+            name: modifier.name,
+            price: modifier.priceDelta,
+          });
+        }
+      }
+    }
+    return out;
   }
 
   function getCustomizeUnitPrice(): number {
@@ -218,14 +291,37 @@ export default function KioskPage() {
     const addOnTotal = selectedItem.addOns
       .filter((a) => customAddOns.has(a.id))
       .reduce((sum, a) => sum + a.price, 0);
-    return Math.round((base + addOnTotal) * 100) / 100;
+    const modTotal = collectModifierAddOns().reduce((s, m) => s + m.price, 0);
+    return Math.round((base + addOnTotal + modTotal) * 100) / 100;
+  }
+
+  // Validate required groups have their min selections met.
+  function modifierValidationError(): string | null {
+    if (!selectedItem) return null;
+    for (const group of selectedItem.modifierGroups ?? []) {
+      const count = customModifiers[group.id]?.size ?? 0;
+      if (group.required && count < group.minSelections) {
+        return `${group.name} requires at least ${group.minSelections} selection${
+          group.minSelections > 1 ? 's' : ''
+        }`;
+      }
+    }
+    return null;
   }
 
   function handleAddToCart() {
     if (!selectedItem) return;
-    const addOns: InStoreAddOn[] = selectedItem.addOns
-      .filter((a) => customAddOns.has(a.id))
-      .map((a) => ({ addOnId: a.id, name: a.name, price: a.price }));
+    const validation = modifierValidationError();
+    if (validation) {
+      alert(validation);
+      return;
+    }
+    const addOns: InStoreAddOn[] = [
+      ...selectedItem.addOns
+        .filter((a) => customAddOns.has(a.id))
+        .map((a) => ({ addOnId: a.id, name: a.name, price: a.price })),
+      ...collectModifierAddOns(),
+    ];
 
     cart.addItem({
       menuItemId: selectedItem.id,
@@ -415,7 +511,11 @@ export default function KioskPage() {
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                 {categoryItems.map((item) => {
                   const needsCustomize =
-                    item.allowSizes || item.allowMilk || item.allowTemp || item.addOns.length > 0;
+                    item.allowSizes ||
+                    item.allowMilk ||
+                    item.allowTemp ||
+                    item.addOns.length > 0 ||
+                    (item.modifierGroups?.length ?? 0) > 0;
                   return (
                     <button
                       key={item.id}
@@ -575,6 +675,50 @@ export default function KioskPage() {
                 </div>
               </div>
             )}
+
+            {/* Modifier groups */}
+            {(selectedItem.modifierGroups ?? []).map((group) => {
+              const picked = customModifiers[group.id] ?? new Set<string>();
+              const isRadio = group.maxSelections === 1;
+              return (
+                <div key={group.id}>
+                  <div className="mb-3 flex items-baseline justify-between gap-3 flex-wrap">
+                    <h3 className="text-lg font-semibold text-neutral-300">
+                      {group.name}
+                      {group.required && (
+                        <span className="ml-2 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5">
+                          Required
+                        </span>
+                      )}
+                    </h3>
+                    {!isRadio && (
+                      <span className="text-xs text-neutral-500">
+                        {picked.size}/{group.maxSelections} selected
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {group.modifiers.map((m) => {
+                      const isSelected = picked.has(m.id);
+                      return (
+                        <button
+                          key={m.id}
+                          onClick={() => toggleModifier(group, m.id)}
+                          className={`rounded-full px-5 py-3 text-base font-medium transition-all ${
+                            isSelected
+                              ? 'bg-amber-500 text-neutral-950 shadow-lg shadow-amber-500/25'
+                              : 'bg-neutral-800 text-neutral-200 hover:bg-neutral-700'
+                          }`}
+                        >
+                          {m.name}
+                          {m.priceDelta > 0 && ` +$${m.priceDelta.toFixed(2)}`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
 
             {/* Add-ons */}
             {selectedItem.addOns.length > 0 && (

@@ -17,6 +17,21 @@ interface MenuAddOn {
   category: string;
 }
 
+interface Modifier {
+  id: string;
+  name: string;
+  priceDelta: number;
+}
+
+interface ModifierGroup {
+  id: string;
+  name: string;
+  required: boolean;
+  minSelections: number;
+  maxSelections: number;
+  modifiers: Modifier[];
+}
+
 interface MenuItem {
   id: string;
   name: string;
@@ -31,6 +46,7 @@ interface MenuItem {
   imageUrl: string | null;
   available: boolean;
   addOns: MenuAddOn[];
+  modifierGroups: ModifierGroup[];
 }
 
 type OrderStatus = 'RECEIVED' | 'IN_PROGRESS' | 'READY' | 'PICKED_UP';
@@ -142,6 +158,20 @@ function CustomizeModal({
   const [selectedAddOns, setSelectedAddOns] = useState<Set<string>>(new Set());
   const [notes, setNotes] = useState('');
 
+  // Modifier group selections — groupId → set of modifier ids.
+  const [modifierSelections, setModifierSelections] = useState<
+    Record<string, Set<string>>
+  >(() => {
+    const initial: Record<string, Set<string>> = {};
+    for (const g of item.modifierGroups ?? []) {
+      initial[g.id] =
+        g.required && g.modifiers.length > 0
+          ? new Set([g.modifiers[0].id])
+          : new Set();
+    }
+    return initial;
+  });
+
   const toggleAddOn = (id: string) => {
     setSelectedAddOns((prev) => {
       const next = new Set(prev);
@@ -150,6 +180,34 @@ function CustomizeModal({
       return next;
     });
   };
+
+  const toggleModifier = (group: ModifierGroup, modifierId: string) => {
+    setModifierSelections((prev) => {
+      const current = new Set(prev[group.id] ?? []);
+      if (group.maxSelections === 1) {
+        if (current.has(modifierId)) {
+          if (!group.required) current.delete(modifierId);
+        } else {
+          current.clear();
+          current.add(modifierId);
+        }
+      } else {
+        if (current.has(modifierId)) {
+          current.delete(modifierId);
+        } else if (current.size < group.maxSelections) {
+          current.add(modifierId);
+        }
+      }
+      return { ...prev, [group.id]: current };
+    });
+  };
+
+  const modifierAddOns = (item.modifierGroups ?? []).flatMap((g) => {
+    const picked = modifierSelections[g.id] ?? new Set<string>();
+    return g.modifiers
+      .filter((m) => picked.has(m.id))
+      .map((m) => ({ addOnId: m.id, name: m.name, price: m.priceDelta }));
+  });
 
   const priceForSize = (s: Size): number => {
     if (s === 'MEDIUM' && item.mediumPrice != null) return item.mediumPrice;
@@ -167,14 +225,31 @@ function CustomizeModal({
     for (const ao of item.addOns) {
       if (selectedAddOns.has(ao.id)) price += ao.price;
     }
+    for (const mod of modifierAddOns) {
+      price += mod.price;
+    }
     return Math.round(price * 100) / 100;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [size, selectedAddOns, item]);
+  }, [size, selectedAddOns, item, modifierSelections]);
 
   const handleAdd = () => {
-    const addOns = item.addOns
-      .filter((a) => selectedAddOns.has(a.id))
-      .map((a) => ({ addOnId: a.id, name: a.name, price: a.price }));
+    // Validate required modifier groups
+    for (const g of item.modifierGroups ?? []) {
+      const count = modifierSelections[g.id]?.size ?? 0;
+      if (g.required && count < g.minSelections) {
+        alert(`${g.name} requires at least ${g.minSelections} selection${
+          g.minSelections > 1 ? 's' : ''
+        }`);
+        return;
+      }
+    }
+
+    const addOns = [
+      ...item.addOns
+        .filter((a) => selectedAddOns.has(a.id))
+        .map((a) => ({ addOnId: a.id, name: a.name, price: a.price })),
+      ...modifierAddOns,
+    ];
 
     onAdd({
       menuItemId: item.id,
@@ -298,6 +373,55 @@ function CustomizeModal({
               </div>
             </fieldset>
           )}
+
+          {/* Modifier groups */}
+          {(item.modifierGroups ?? []).map((group) => {
+            const picked = modifierSelections[group.id] ?? new Set<string>();
+            const isRadio = group.maxSelections === 1;
+            return (
+              <fieldset key={group.id}>
+                <div className="mb-2 flex items-baseline justify-between gap-3 flex-wrap">
+                  <legend className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+                    {group.name}
+                    {group.required && (
+                      <span className="ml-2 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5">
+                        Required
+                      </span>
+                    )}
+                  </legend>
+                  {!isRadio && (
+                    <span className="text-[10px] text-neutral-500">
+                      {picked.size}/{group.maxSelections}
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {group.modifiers.map((m) => {
+                    const isSelected = picked.has(m.id);
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => toggleModifier(group, m.id)}
+                        className={`min-h-[44px] rounded-lg border-2 px-3 py-2 text-sm font-semibold transition-colors text-left ${
+                          isSelected
+                            ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300'
+                            : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-500'
+                        }`}
+                      >
+                        <span className="block">{m.name}</span>
+                        {m.priceDelta > 0 && (
+                          <span className="block text-[10px] text-neutral-400">
+                            +${m.priceDelta.toFixed(2)}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </fieldset>
+            );
+          })}
 
           {/* Add-ons */}
           {item.addOns.length > 0 && (
@@ -544,7 +668,12 @@ export default function BaristaPosPage() {
 
   // ---------- Menu item tap ----------
   const handleMenuItemTap = (item: MenuItem) => {
-    const hasCustomization = item.allowSizes || item.allowMilk || item.allowTemp || item.addOns.length > 0;
+    const hasCustomization =
+      item.allowSizes ||
+      item.allowMilk ||
+      item.allowTemp ||
+      item.addOns.length > 0 ||
+      (item.modifierGroups?.length ?? 0) > 0;
     if (hasCustomization) {
       setCustomizeItem(item);
     } else {

@@ -81,10 +81,18 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const data = createOrderSchema.parse(body);
 
-    // Fetch menu items to compute prices server-side
+    // Fetch menu items to compute prices server-side + pull attached
+    // modifier groups so we can validate required selections.
     const menuItemIds = data.items.map((i) => i.menuItemId);
     const menuItems = await db.menuItem.findMany({
       where: { id: { in: menuItemIds }, isActive: true },
+      include: {
+        modifierGroups: {
+          include: {
+            group: { include: { modifiers: true } },
+          },
+        },
+      },
     });
 
     if (menuItems.length !== new Set(menuItemIds).size) {
@@ -92,6 +100,43 @@ export async function POST(request: NextRequest) {
     }
 
     const menuItemMap = new Map(menuItems.map((m) => [m.id, m]));
+
+    // Validate required modifier groups for each line item. We treat the
+    // client-supplied addOns array as the source of truth for which modifiers
+    // are picked — kiosk/POS flatten modifier choices into the same shape.
+    for (const lineItem of data.items) {
+      const menuItem = menuItemMap.get(lineItem.menuItemId);
+      if (!menuItem) continue;
+      const pickedIds = new Set(lineItem.addOns.map((a) => a.addOnId));
+      for (const link of menuItem.modifierGroups) {
+        const group = link.group;
+        const validIds = new Set(group.modifiers.map((m) => m.id));
+        const pickedInGroup = group.modifiers.filter((m) => pickedIds.has(m.id)).length;
+        if (group.required && pickedInGroup < group.minSelections) {
+          return NextResponse.json(
+            {
+              error: `${menuItem.name}: ${group.name} requires at least ${group.minSelections} selection${
+                group.minSelections > 1 ? 's' : ''
+              }`,
+            },
+            { status: 400 },
+          );
+        }
+        if (pickedInGroup > group.maxSelections) {
+          return NextResponse.json(
+            {
+              error: `${menuItem.name}: ${group.name} allows at most ${group.maxSelections} selection${
+                group.maxSelections > 1 ? 's' : ''
+              }`,
+            },
+            { status: 400 },
+          );
+        }
+        // Don't fail if extra add-ons (non-modifier ones) are also in addOns —
+        // those are global MenuAddOn rows, not bound to a group.
+        void validIds;
+      }
+    }
 
     // Compute line items
     const orderItems = data.items.map((item) => {

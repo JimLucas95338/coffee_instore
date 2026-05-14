@@ -1178,25 +1178,26 @@ enum InStorePaymentStatus {
 }
 
 model MenuItem {
-  id          String             @id @default(cuid())
-  name        String
-  description String?
-  category    String             // ESPRESSO, DRIP, COLD, TEA, FOOD, RETAIL
-  basePrice   Float              // Price for SMALL / default size
-  mediumPrice Float?             // Price for MEDIUM (null if no sizes)
-  largePrice  Float?             // Price for LARGE (null if no sizes)
-  imageUrl    String?
-  isActive    Boolean            @default(true)
-  sortOrder   Int                @default(0)
-  allowSizes  Boolean            @default(true)
-  allowMilk   Boolean            @default(true)
-  allowTemp   Boolean            @default(true)
-  coffeeId    String?
-  coffee      Coffee?            @relation(fields: [coffeeId], references: [id])
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  addOns      MenuAddOn[]
-  orderItems  InStoreOrderItem[]
+  id              String                  @id @default(cuid())
+  name            String
+  description     String?
+  category        String                  // ESPRESSO, DRIP, COLD, TEA, FOOD, RETAIL
+  basePrice       Float                   // Price for SMALL / default size
+  mediumPrice     Float?                  // Price for MEDIUM (null if no sizes)
+  largePrice      Float?                  // Price for LARGE (null if no sizes)
+  imageUrl        String?
+  isActive        Boolean                 @default(true)
+  sortOrder       Int                     @default(0)
+  allowSizes      Boolean                 @default(true)
+  allowMilk       Boolean                 @default(true)
+  allowTemp       Boolean                 @default(true)
+  coffeeId        String?
+  coffee          Coffee?                 @relation(fields: [coffeeId], references: [id])
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  addOns          MenuAddOn[]
+  modifierGroups  MenuItemModifierGroup[]
+  orderItems      InStoreOrderItem[]
 
   @@index([category])
   @@map("menu_items")
@@ -1214,6 +1215,52 @@ model MenuAddOn {
   updatedAt DateTime   @updatedAt
 
   @@map("menu_add_ons")
+}
+
+// Structured modifier groups (e.g. "Milk choice", "Syrups", "Espresso shots").
+// Attach to menu items via MenuItemModifierGroup. Use `required` + min/max for
+// validation. Stored selections piggy-back on the existing addOns JSON on
+// InStoreOrderItem so receipts and queue rendering keep working unchanged.
+model ModifierGroup {
+  id            String                  @id @default(cuid())
+  name          String                  // "Milk", "Syrups"
+  required      Boolean                 @default(false)
+  minSelections Int                     @default(0)
+  maxSelections Int                     @default(1)
+  sortOrder     Int                     @default(0)
+  modifiers     Modifier[]
+  menuItems     MenuItemModifierGroup[]
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  @@map("modifier_groups")
+}
+
+model Modifier {
+  id          String        @id @default(cuid())
+  groupId     String
+  group       ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  name        String        // "Oat", "Vanilla Syrup"
+  priceDelta  Float         @default(0)
+  sortOrder   Int           @default(0)
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([groupId])
+  @@map("modifiers")
+}
+
+// Explicit join so we can control sort order per item.
+model MenuItemModifierGroup {
+  menuItemId String
+  groupId    String
+  sortOrder  Int           @default(0)
+  menuItem   MenuItem      @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  group      ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([menuItemId, groupId])
+  @@map("menu_item_modifier_groups")
 }
 
 model InStoreOrder {

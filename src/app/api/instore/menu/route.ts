@@ -12,6 +12,19 @@ export async function GET(request: NextRequest) {
           where: { isActive: true },
           orderBy: { sortOrder: 'asc' },
         },
+        modifierGroups: {
+          orderBy: { sortOrder: 'asc' },
+          include: {
+            group: {
+              include: {
+                modifiers: {
+                  where: { isActive: true },
+                  orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+                },
+              },
+            },
+          },
+        },
         coffee: {
           select: {
             id: true,
@@ -35,9 +48,23 @@ export async function GET(request: NextRequest) {
         );
         available = roastedStock > 0;
       }
-      // Strip the nested coffee/inventory data from response
-      const { coffee, ...rest } = item;
-      return { ...rest, available };
+      // Strip the nested coffee/inventory data and flatten modifier groups so
+      // the client gets a simpler shape.
+      const { coffee, modifierGroups, ...rest } = item;
+      const flatGroups = modifierGroups.map((mg) => ({
+        id: mg.group.id,
+        name: mg.group.name,
+        required: mg.group.required,
+        minSelections: mg.group.minSelections,
+        maxSelections: mg.group.maxSelections,
+        sortOrder: mg.sortOrder,
+        modifiers: mg.group.modifiers.map((m) => ({
+          id: m.id,
+          name: m.name,
+          priceDelta: m.priceDelta,
+        })),
+      }));
+      return { ...rest, modifierGroups: flatGroups, available };
     });
 
     // Group by category

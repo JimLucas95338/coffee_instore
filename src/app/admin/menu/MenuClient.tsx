@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import AddOnsSection from './AddOnsSection';
+import ModifierGroupsSection from './ModifierGroupsSection';
 
 const CATEGORIES = ['ESPRESSO', 'DRIP', 'COLD', 'TEA', 'FOOD', 'RETAIL'] as const;
 type Category = (typeof CATEGORIES)[number];
@@ -232,6 +233,10 @@ export default function MenuClient() {
           {error}
         </div>
       )}
+
+      <ModifierGroupsSection
+        menuItems={items.map((i) => ({ id: i.id, name: i.name, category: i.category }))}
+      />
 
       <AddOnsSection />
 

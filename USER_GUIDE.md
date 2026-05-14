@@ -210,6 +210,22 @@ The order stays in history but is flagged **Refunded** and excluded from net sal
 
 **Mark Paid** (Bar Station): cash orders sit `PENDING` until someone hits the **💵 Mark Paid** button on the Bar Station card. That call flips `paymentStatus` to `PAID` and stamps `paidAt`. Cards are still auto-marked PAID on submit (see §9).
 
+## 8.8. Loyalty admin (manager/admin)
+
+`/admin/loyalty` is the customer-facing side of the loyalty program:
+
+- **Search** by phone number or name (top-10 by balance otherwise)
+- Click a member to see their full transaction history, points balance, total lifetime spend, and recent orders
+- **+ Grant points** or **− Revoke points** with a required reason (recorded as an `ADJUST` transaction noting who did it)
+
+Use cases: returning unhappy customer ("here's 50 free points, sorry"), fixing a misentered phone number's points, rewarding a regular.
+
+## 8.9. Manual discounts on POS
+
+When taking an order on `/instore/pos`, click **+ Add discount** above the totals to comp the order. Choose **% off** or **$ off**, enter the value, and provide a reason (required). The discount line shows up live in the subtotal and is recorded on the order along with the reason. Reports show a separate "Discounts" headline card.
+
+This is what staff uses for "drink was cold, here's $2 off" or "first-time customer 10% off" comps.
+
 ## 8.7. Reports (admin/manager)
 
 `/admin/reports` summarizes sales over a date range:
@@ -267,8 +283,6 @@ Real Stripe Terminal integration is on the roadmap — see `TODO.md` in the repo
 
 See `TODO.md` in the repo for the full list. Highlights:
 - **Stripe Terminal** integration for real card payments (Tap to Pay on iPhone or hardware reader)
-- **Add-on create/edit/delete** UI (today only the toggle works)
-- **Loyalty member lookup** UI
 - **Image upload** for menu items (currently a URL field)
 - **Employee time tracking** + per-employee sales
 - **Partial refunds** (today's refunds are full-order only)
@@ -289,7 +303,8 @@ See `TODO.md` in the repo for the full list. Highlights:
 | `/instore/display` | Customer-facing menu+queue | public |
 | `/admin/orders` | Order history + refunds | manager+ |
 | `/admin/reports` | Sales reports | manager+ |
-| `/admin/menu` | Menu items + add-ons | admin |
+| `/admin/loyalty` | Loyalty member admin | manager+ |
+| `/admin/menu` | Menu items + add-ons (CRUD) | admin |
 | `/admin/users` | Staff accounts | admin |
 | `/admin/brand` | Theme + brand switcher | admin |
 | `/help` | This guide | required |

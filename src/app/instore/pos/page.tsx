@@ -394,6 +394,12 @@ export default function BaristaPosPage() {
   const [redeemPoints, setRedeemPoints] = useState(false);
   const [loyaltyToast, setLoyaltyToast] = useState<string | null>(null);
 
+  // Manual discount state
+  const [discountType, setDiscountType] = useState<'PERCENT' | 'AMOUNT' | null>(null);
+  const [discountValue, setDiscountValue] = useState('');
+  const [discountReason, setDiscountReason] = useState('');
+  const [showDiscount, setShowDiscount] = useState(false);
+
   // Print settings
   const printerType = usePrintSettings((s) => s.printerType);
   const autoPrint = usePrintSettings((s) => s.autoPrint);
@@ -421,8 +427,19 @@ export default function BaristaPosPage() {
   const getSubtotal = useInStoreCartStore((s) => s.getSubtotal);
 
   const subtotal = getSubtotal();
-  const tax = calculateTax(subtotal);
-  const total = Math.round((subtotal + tax) * 100) / 100;
+  const loyaltyDiscount =
+    redeemPoints && loyaltyMember?.canRedeem ? loyaltyMember.redeemValue : 0;
+  const afterLoyalty = Math.max(0, subtotal - loyaltyDiscount);
+  const manualDiscountAmount = (() => {
+    if (!discountType || !discountValue) return 0;
+    const v = parseFloat(discountValue);
+    if (Number.isNaN(v) || v <= 0) return 0;
+    const raw = discountType === 'PERCENT' ? afterLoyalty * (v / 100) : v;
+    return Math.round(Math.max(0, Math.min(raw, afterLoyalty)) * 100) / 100;
+  })();
+  const discountedSubtotal = Math.max(0, afterLoyalty - manualDiscountAmount);
+  const tax = calculateTax(discountedSubtotal);
+  const total = Math.round((discountedSubtotal + tax) * 100) / 100;
 
   // ---------- Fetch menu ----------
   useEffect(() => {
@@ -563,6 +580,10 @@ export default function BaristaPosPage() {
   // ---------- Submit order ----------
   const submitOrder = async (paymentMethod: 'CASH' | 'CARD') => {
     if (items.length === 0) return;
+    if (discountType && discountValue && !discountReason.trim()) {
+      alert('Please add a reason for the discount before submitting.');
+      return;
+    }
     setSubmitting(true);
     setSubmitError(null);
     try {
@@ -572,6 +593,14 @@ export default function BaristaPosPage() {
         source: 'POS' as const,
         loyaltyPhone: loyaltyPhone.replace(/\D/g, '').length >= 10 ? loyaltyPhone : undefined,
         redeemPoints: redeemPoints || undefined,
+        manualDiscount:
+          manualDiscountAmount > 0 && discountType
+            ? {
+                type: discountType,
+                value: parseFloat(discountValue),
+                reason: discountReason.trim(),
+              }
+            : undefined,
         items: items.map((ci) => ({
           menuItemId: ci.menuItemId,
           quantity: ci.quantity,
@@ -618,6 +647,12 @@ export default function BaristaPosPage() {
       setLoyaltyPhone('');
       setLoyaltyMember(null);
       setRedeemPoints(false);
+
+      // Reset discount state
+      setDiscountType(null);
+      setDiscountValue('');
+      setDiscountReason('');
+      setShowDiscount(false);
 
       clearCart();
       // Refresh queue immediately
@@ -1041,11 +1076,96 @@ export default function BaristaPosPage() {
                 {submitError}
               </p>
             )}
+            {/* Manual discount controls */}
+            {items.length > 0 && (
+              <div className="mb-3">
+                {!showDiscount && !manualDiscountAmount && (
+                  <button
+                    onClick={() => setShowDiscount(true)}
+                    className="w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-1.5 text-xs text-neutral-400 hover:bg-neutral-800"
+                  >
+                    + Add discount
+                  </button>
+                )}
+                {(showDiscount || manualDiscountAmount > 0) && (
+                  <div className="rounded-lg border border-amber-900/40 bg-amber-950/20 p-2 space-y-2">
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => setDiscountType('PERCENT')}
+                        className={`flex-1 rounded px-2 py-1 text-xs font-semibold ${
+                          discountType === 'PERCENT'
+                            ? 'bg-amber-600 text-white'
+                            : 'bg-neutral-800 text-neutral-400'
+                        }`}
+                      >
+                        % off
+                      </button>
+                      <button
+                        onClick={() => setDiscountType('AMOUNT')}
+                        className={`flex-1 rounded px-2 py-1 text-xs font-semibold ${
+                          discountType === 'AMOUNT'
+                            ? 'bg-amber-600 text-white'
+                            : 'bg-neutral-800 text-neutral-400'
+                        }`}
+                      >
+                        $ off
+                      </button>
+                      <button
+                        onClick={() => {
+                          setDiscountType(null);
+                          setDiscountValue('');
+                          setDiscountReason('');
+                          setShowDiscount(false);
+                        }}
+                        className="rounded bg-neutral-800 px-2 py-1 text-xs text-neutral-500 hover:bg-red-900/40 hover:text-red-400"
+                        aria-label="Clear discount"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    {discountType && (
+                      <>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          inputMode="decimal"
+                          placeholder={discountType === 'PERCENT' ? '10' : '2.00'}
+                          value={discountValue}
+                          onChange={(e) => setDiscountValue(e.target.value)}
+                          className="w-full rounded bg-neutral-800 border border-neutral-700 px-2 py-1 text-sm text-white"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Reason (required)"
+                          value={discountReason}
+                          onChange={(e) => setDiscountReason(e.target.value)}
+                          className="w-full rounded bg-neutral-800 border border-neutral-700 px-2 py-1 text-xs text-white"
+                        />
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="mb-3 space-y-1 text-sm">
               <div className="flex justify-between text-neutral-400">
                 <span>Subtotal</span>
                 <span>${subtotal.toFixed(2)}</span>
               </div>
+              {loyaltyDiscount > 0 && (
+                <div className="flex justify-between text-emerald-400">
+                  <span>Loyalty redemption</span>
+                  <span>−${loyaltyDiscount.toFixed(2)}</span>
+                </div>
+              )}
+              {manualDiscountAmount > 0 && (
+                <div className="flex justify-between text-amber-400">
+                  <span>Discount{discountReason && ` — ${discountReason}`}</span>
+                  <span>−${manualDiscountAmount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-neutral-400">
                 <span>Tax (8%)</span>
                 <span>${tax.toFixed(2)}</span>

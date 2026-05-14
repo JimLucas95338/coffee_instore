@@ -40,7 +40,6 @@ What to add:
 
 ### Other open work
 
-- Add-on **create/edit/delete** UI (today only `isActive` toggle exists)
 - `/instore/menu` redirect → `/instore/display` for backwards-compat
   with old bookmarks
 - **Partial refunds** (today's refunds are full-order only)
@@ -50,4 +49,6 @@ What to add:
   already has `employeeId` on orders, POS doesn't capture it)
 - **Real-time updates** via SSE/WebSockets — Bar Station + Display
   poll every 4 seconds today
-- **Loyalty member lookup/comp UI**
+- **Customer email receipts** from the kiosk confirmation screen
+- **Search** in admin pages (menu items, orders, users)
+- **Audit log** of admin actions

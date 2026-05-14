@@ -40,6 +40,9 @@ export default async function AdminLayout({
               <Link href="/admin/menu" className="text-ink-dark/80 hover:text-accent-400 transition-colors">
                 Menu
               </Link>
+              <Link href="/admin/loyalty" className="text-ink-dark/80 hover:text-accent-400 transition-colors">
+                Loyalty
+              </Link>
               <Link href="/admin/users" className="text-ink-dark/80 hover:text-accent-400 transition-colors">
                 Users
               </Link>

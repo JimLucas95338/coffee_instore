@@ -221,6 +221,29 @@ export default async function HelpPage() {
           </p>
         </Section>
 
+        <Section id="loyaltyAdmin" number="7d" title="Loyalty admin (manager/admin)">
+          <p className="text-ink-dark mb-3">
+            <Link href="/admin/loyalty" className="text-accent-400 hover:underline">
+              /admin/loyalty
+            </Link>{' '}
+            — search members by phone or name. Click a row to see full history,
+            recent orders, and use{' '}
+            <strong className="text-emerald-400">+ Grant points</strong> /{' '}
+            <strong className="text-red-400">− Revoke points</strong> with a
+            required reason. Adjustments are stamped with the admin&apos;s email.
+          </p>
+        </Section>
+
+        <Section id="discounts" number="7e" title="Manual discounts on POS">
+          <p className="text-ink-dark">
+            On <Code>/instore/pos</Code>, click <strong>+ Add discount</strong>{' '}
+            above the totals to comp an order. Pick % or $ off, enter the value,
+            and provide a reason (required). The discount applies before tax;
+            reports show a Discounts headline card and per-order detail
+            (visible on <Code>/admin/orders</Code> expand).
+          </p>
+        </Section>
+
         <Section id="reports" number="7c" title="Reports (manager/admin)">
           <p className="text-ink-dark mb-3">
             <Link href="/admin/reports" className="text-accent-400 hover:underline">
@@ -316,7 +339,8 @@ export default async function HelpPage() {
               ['/instore/display', 'Customer-facing display', 'public'],
               ['/admin/orders', 'Orders + refunds', 'manager+'],
               ['/admin/reports', 'Sales reports', 'manager+'],
-              ['/admin/menu', 'Menu items + add-ons', 'admin'],
+              ['/admin/loyalty', 'Loyalty members', 'manager+'],
+              ['/admin/menu', 'Menu items + add-ons (CRUD)', 'admin'],
               ['/admin/users', 'Staff accounts', 'admin'],
               ['/admin/brand', 'Theme + brand switcher', 'admin'],
               ['/help', 'This guide', 'required'],
@@ -348,6 +372,8 @@ function Toc() {
     ['orders', '7a. Orders & refunds'],
     ['brand', '7b. Brand & theme'],
     ['reports', '7c. Reports'],
+    ['loyaltyAdmin', '7d. Loyalty admin'],
+    ['discounts', '7e. Manual discounts'],
     ['users', '8. Users & roles'],
     ['payments', '9. Payments'],
     ['troubleshoot', '10. Troubleshooting'],

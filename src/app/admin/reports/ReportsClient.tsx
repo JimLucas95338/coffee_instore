@@ -10,6 +10,8 @@ interface Totals {
   orderCount: number;
   refundCount: number;
   avgTicket: number;
+  manualDiscountTotal: number;
+  manualDiscountCount: number;
 }
 
 interface DailyBucket {
@@ -152,6 +154,11 @@ export default function ReportsClient() {
             <Card
               label="Refunds"
               value={`$${data.totals.refunded.toFixed(2)} · ${data.totals.refundCount}`}
+              negative
+            />
+            <Card
+              label="Discounts"
+              value={`$${data.totals.manualDiscountTotal.toFixed(2)} · ${data.totals.manualDiscountCount}`}
               negative
             />
             <Card label="Tax collected" value={`$${data.totals.tax.toFixed(2)}`} />

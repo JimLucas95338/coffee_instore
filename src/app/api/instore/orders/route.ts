@@ -27,6 +27,15 @@ const createOrderSchema = z.object({
   employeeId: z.string().optional(),
   loyaltyPhone: z.string().optional(),
   redeemPoints: z.boolean().optional(),
+  // Manual discount applied at POS. `type` is how to interpret `value`:
+  // 'PERCENT' = % off subtotal, 'AMOUNT' = flat $ off. Reason is required.
+  manualDiscount: z
+    .object({
+      type: z.enum(['PERCENT', 'AMOUNT']),
+      value: z.number().positive(),
+      reason: z.string().min(1).max(200),
+    })
+    .optional(),
 });
 
 // GET: List today's orders, filterable by status
@@ -137,11 +146,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const discountedSubtotal = Math.round((subtotal - loyaltyDiscount) * 100) / 100;
+    // Apply manual discount on top of loyalty redemption. Capped so the
+    // discounted subtotal can't go below zero.
+    let manualDiscountAmount = 0;
+    if (data.manualDiscount) {
+      const afterLoyalty = subtotal - loyaltyDiscount;
+      if (data.manualDiscount.type === 'PERCENT') {
+        manualDiscountAmount =
+          Math.round(afterLoyalty * (data.manualDiscount.value / 100) * 100) / 100;
+      } else {
+        manualDiscountAmount = data.manualDiscount.value;
+      }
+      manualDiscountAmount = Math.max(0, Math.min(manualDiscountAmount, afterLoyalty));
+    }
+
+    const discountedSubtotal = Math.round(
+      (subtotal - loyaltyDiscount - manualDiscountAmount) * 100,
+    ) / 100;
     const tax = calculateTax(discountedSubtotal);
     const total = Math.round((discountedSubtotal + tax) * 100) / 100;
 
-    // Points earned: 1 per dollar spent (on the discounted amount)
+    // Points earned: 1 per dollar spent (on the post-all-discounts amount)
     const loyaltyPointsEarned = Math.floor(discountedSubtotal);
 
     // Generate order number and display number atomically
@@ -172,6 +197,9 @@ export async function POST(request: NextRequest) {
         loyaltyPhone: normalizedPhone || null,
         loyaltyPointsEarned: normalizedPhone ? loyaltyPointsEarned : null,
         loyaltyPointsRedeemed: loyaltyPointsRedeemed > 0 ? loyaltyPointsRedeemed : null,
+        manualDiscount: manualDiscountAmount > 0 ? manualDiscountAmount : null,
+        manualDiscountReason:
+          manualDiscountAmount > 0 ? data.manualDiscount?.reason ?? null : null,
         loyaltyDiscount: loyaltyDiscount > 0 ? loyaltyDiscount : null,
         items: { create: orderItems },
       },

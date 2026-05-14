@@ -1236,6 +1236,9 @@ model InStoreOrder {
   loyaltyPointsEarned   Int?
   loyaltyPointsRedeemed Int?
   loyaltyDiscount       Float?
+  // Manual discount applied at POS (manager comp, customer service).
+  manualDiscount        Float?
+  manualDiscountReason  String?
   // Refund fields — set when a manager/admin voids the order.
   refundedAt            DateTime?
   refundedAmount        Float?

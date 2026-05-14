@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
       paymentMethod: true,
       refundedAmount: true,
       refundedAt: true,
+      manualDiscount: true,
       createdAt: true,
       items: {
         select: {
@@ -77,6 +78,8 @@ export async function GET(request: NextRequest) {
   const orderCount = orders.length;
   const refundCount = orders.filter((o) => o.refundedAt).length;
   const avgTicket = orderCount > 0 ? gross / orderCount : 0;
+  const manualDiscountTotal = orders.reduce((s, o) => s + (o.manualDiscount ?? 0), 0);
+  const manualDiscountCount = orders.filter((o) => (o.manualDiscount ?? 0) > 0).length;
 
   // Payment method breakdown
   const byPaymentMethod: Record<string, { gross: number; count: number }> = {};
@@ -142,6 +145,8 @@ export async function GET(request: NextRequest) {
       orderCount,
       refundCount,
       avgTicket,
+      manualDiscountTotal,
+      manualDiscountCount,
     },
     daily,
     byPaymentMethod,
